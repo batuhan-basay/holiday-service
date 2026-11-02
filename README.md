@@ -10,7 +10,7 @@ stretch into long weekends, and how many **business days** sit between two dates
 weekends and holidays are taken out.
 
 It has no database, no cache server and no upstream provider. Each country's calendar is a
-set of **rules** shipped with the assembly, and the holidays for a year are computed from
+set of **rules** shipped inside the assembly, and the holidays for a year are computed from
 them on demand.
 
 ---
@@ -41,8 +41,9 @@ you apply them to a year. Four rule kinds cover every holiday in the five calend
 | `easter` | An offset from Easter Sunday | Easter − 2 — Good Friday |
 | `hijri` | A Hijri-calendar date, optionally spanning several days | 1 Shawwal, 3 days — Ramazan Bayramı |
 
-Easter comes from the anonymous Gregorian computus; the unit tests pin it against twelve
-known dates and assert it always lands on a Sunday between 22 March and 25 April.
+Easter comes from the anonymous Gregorian computus. The unit tests pin it against twelve
+known dates and assert that across 1900–2100 it always lands on a Sunday between 22 March
+and 25 April.
 
 On top of the rules sits the part most holiday libraries get wrong — **substitution**, when
 a holiday falls on a weekend:
@@ -53,28 +54,29 @@ a holiday falls on a weekend:
 | `nextWorkday` | Always forward to the next free weekday | United Kingdom |
 | `nearestWorkday` | Saturday moves **back** to Friday, Sunday forward to Monday | United States |
 
-Those three behaviours are genuinely different, and the difference is visible in 2026: the
-UK moves Boxing Day from Saturday 26 December to Monday 28 December, the US observes
-Independence Day on Friday 3 July because 4 July is a Saturday, and Germany just loses
-Tag der Deutschen Einheit to Saturday 3 October. Substituted days never collide — if two
-holidays would land on the same Monday, the second one walks on.
+Those three behaviours are genuinely different, and 2026 shows it: the UK moves Boxing Day
+from Saturday 26 December to Monday 28 December, the US observes Independence Day on Friday
+3 July because 4 July is a Saturday, and Germany simply loses Tag der Deutschen Einheit to
+Saturday 3 October. Substituted days never collide — if two holidays would land on the same
+Monday, the second one walks on. Every substituted day is returned with
+`"isSubstitute": true`.
 
-### A note on religious holidays
+### Religious holidays are computed, and marked as such
 
 Ramazan and Kurban Bayramı are derived from the tabular Hijri calendar. That calendar is
-arithmetic, while the official dates are announced by a religious authority, so the two can
-differ by a day — and the drift is not constant:
+arithmetic, while the dates a country actually observes are announced by a religious
+authority, so the two can differ — typically by a day, and not in a consistent direction.
 
-| Year | Computed Ramazan Bayramı | Officially observed |
-|---|---|---|
-| 2025 | 31 March | 30 March |
-| 2026 | 20 March | 20 March |
-| 2027 | 10 March | 9 March |
+The API does not hide this. Every Hijri-derived holiday is returned with
+`"isEstimated": true`, while fixed, weekday and Easter rules are exact and report `false`.
+`HolidayData:HijriDayAdjustment` shifts the Hijri-derived days globally when you need to
+align with a published calendar; it leaves every other holiday untouched. The test suite
+asserts that each feast comes back as a consecutive run of the right length (three days for
+Ramazan Bayramı, four for Kurban) and that its first day stays within one day of the date
+Türkiye observes — 20 March and 27 May in 2026.
 
-The API does not hide this. Every Hijri-derived holiday comes back with
-`"isEstimated": true`, and `HolidayData:HijriDayAdjustment` shifts them globally if you need
-to align with a published calendar. Fixed, weekday and Easter rules are always exact and
-report `"isEstimated": false`.
+If you need dates that are correct by definition rather than by computation, override them
+through the adjustment setting or treat `isEstimated` as a signal to look them up.
 
 ---
 
@@ -85,7 +87,7 @@ Four projects, dependencies pointing inwards only:
 ```
 HolidayService.Api              ASP.NET Core · controllers, auth, rate limiting, versioning
         ↓
-HolidayService.Application      CQRS handlers, validation, contracts, query pipeline
+HolidayService.Application      CQRS queries, validation, contracts, the query pipeline
         ↓                                           ↑
 HolidayService.Domain           rules, calendars, work-day arithmetic — no dependencies
                                                     ↑
@@ -95,18 +97,53 @@ HolidayService.Infrastructure   embedded country JSON, rule mapping, caching dec
 `Infrastructure` depends on `Application` because it implements its interfaces, and is
 referenced only by the composition root in `Program.cs`.
 
+### Layout
+
+```
+src/
+  HolidayService.Domain/
+    Calendar/            EasterCalculator, HijriCalculator, WeekendDefinition, WorkCalendar
+    Common/              Result, Error, ErrorType
+    Countries/           CountryCode value object, Country, CountryErrors
+    Holidays/            Holiday, HolidayRule hierarchy, HolidayCalendar, SubstitutionPolicy
+  HolidayService.Application/
+    Abstractions/        IQuery, IQueryHandler, IQueryBehavior, IHolidayProvider, ICacheService
+    Behaviors/           LoggingBehavior, ValidationBehavior
+    Contracts/           response records and the domain → contract mapper
+    Messaging/           QueryDispatcher
+    Holidays/Queries/    one folder per query
+      GetHolidaysByYear/
+        GetHolidaysByYearQuery.cs
+        GetHolidaysByYearQueryValidator.cs
+        GetHolidaysByYearQueryHandler.cs
+      …
+    Countries/Queries/   GetCountries, GetCountryByCode
+    Workdays/Queries/    CountWorkdays, ShiftWorkdays
+  HolidayService.Infrastructure/
+    Calendars/Data/      tr.json, us.json, gb.json, de.json, es.json
+    Calendars/           definition DTOs, the rule mapper, the embedded catalog, the provider
+    Caching/             MemoryCacheService, CachedHolidayProvider
+  HolidayService.Api/
+    Controllers/V1/      Countries, Holidays, Workdays
+    Authentication/      API-key scheme
+    ErrorHandling/       Result → HTTP mapping, problem-details exception handlers
+    RateLimiting/        per-client fixed-window limiter
+tests/
+  HolidayService.UnitTests/
+```
+
 ### Patterns, and what each one buys
 
 | Pattern | Where | Why it is there |
 |---|---|---|
 | **Clean Architecture** | project layout | The rule engine and work-day maths are testable without a host, a cache or a web server. |
 | **Rule engine** | `Domain/Holidays/HolidayRule.cs` | A new country is data plus zero new code, as long as its holidays fit the four rule kinds. |
-| **Strategy** | `SubstitutionPolicy`, `WeekendDefinition` | Weekend days and weekend-substitution are country data, not an `if` ladder. |
-| **CQRS (read side)** | `Application/*/Queries` | Every operation is a query object with one handler; no service class grows into a god object. |
+| **Strategy** | `SubstitutionPolicy`, `WeekendDefinition` | Weekend days and weekend substitution are country data, not an `if` ladder. |
+| **CQRS (read side)** | `*/Queries` | Every operation is a query object with exactly one handler; no service class grows into a god object. |
 | **Vertical slices** | `*/Queries/<Query>/` | Each query owns a folder holding `XQuery`, `XQueryValidator` and `XQueryHandler`, with the namespace mirroring the path. One endpoint's shape, rules and behaviour sit together and nothing else moves with them. |
-| **Mediator** | `Application/Messaging` | Controllers only translate HTTP to a query. Hand-written rather than taken from a library — see *Dependencies* below. |
+| **Mediator** | `Application/Messaging` | Controllers only translate HTTP to a query. Hand-written rather than taken from a library — see *Dependencies*. |
 | **Pipeline behaviors** | `Application/Behaviors` | Validation and structured logging apply to every handler without a line of handler code. |
-| **Result pattern** | `Domain/Common/Result.cs` | Expected outcomes — unsupported country, bad range — are return values, not exceptions. |
+| **Result pattern** | `Domain/Common/Result.cs` | Expected outcomes — unsupported country, inverted range — are return values, not exceptions. |
 | **Decorator** | `CachedHolidayProvider` | Materialised years are cached without the handlers or the rule engine knowing a cache exists. |
 | **Anti-corruption layer** | `Calendars/CalendarDefinitionMapper` | The JSON shape is translated to domain rules in one place, so the file format can change freely. |
 | **Options pattern** | `HolidayDataOptions`, `ApiKeyOptions`, `RateLimitOptions` | Configuration is typed and validated at startup, so a bad setting fails the boot rather than the first request. |
@@ -122,8 +159,10 @@ HTTP  →  Controller  →  QueryDispatcher  →  LoggingBehavior  →  Validati
                                                          IMemoryCache          HolidayCalendar.ForYear
 ```
 
-Results travel back as `Result<T>` and are mapped to a status code in exactly one place
-(`ApiResults`), so no controller picks a status code by hand.
+`QueryDispatcher` resolves the handler for a query, wraps it in the registered behaviors and
+caches the closed generic executor per query type. Results travel back as `Result<T>` and are
+mapped to a status code in exactly one place (`ApiResults`), so no controller picks a status
+code by hand.
 
 ---
 
@@ -173,37 +212,51 @@ details carrying an `errorCode`.
 
 ```bash
 curl -H "X-API-Key: dev-local-key" \
-  "http://localhost:5080/api/v1/workdays/TR/count?from=2026-01-01&to=2026-03-31"
+  "http://localhost:5080/api/v1/workdays/TR/count?from=2026-10-01&to=2026-12-31"
 ```
 
 ```json
 {
   "countryCode": "TR",
-  "from": "2026-01-01",
-  "to": "2026-03-31",
-  "totalDays": 90,
-  "workdays": 62,
+  "from": "2026-10-01",
+  "to": "2026-12-31",
+  "totalDays": 92,
+  "workdays": 65,
   "weekendDays": 26,
-  "publicHolidayDays": 4
+  "publicHolidayDays": 1
 }
 ```
 
-A holiday carries the two honesty flags:
+A single holiday carries both honesty flags:
 
 ```json
 {
-  "date": "2026-03-20",
-  "name": "Ramadan Feast",
-  "localName": "Ramazan Bayramı",
+  "date": "2026-10-29",
+  "name": "Republic Day",
+  "localName": "Cumhuriyet Bayramı",
   "countryCode": "TR",
-  "dayOfWeek": "Friday",
+  "dayOfWeek": "Thursday",
   "types": ["Public"],
   "isSubstitute": false,
-  "isEstimated": true
+  "isEstimated": false
 }
 ```
 
-And an error:
+### Errors
+
+| `errorCode` | Status | Raised when |
+|---|---|---|
+| `Country.CodeRequired` | 400 | The country code is missing or blank |
+| `Country.CodeInvalid` | 400 | The country code is not two ASCII letters |
+| `Country.NotSupported` | 404 | The code is well formed but no calendar is embedded for it |
+| `Holiday.YearOutOfRange` | 400 | The year falls outside the supported window |
+| `Holiday.RangeInverted` | 400 | `from` is later than `to` |
+| `Holiday.RangeTooWide` | 400 | The range exceeds the per-request day limit |
+| `Request.ValidationFailed` | 400 | One or more query parameters failed validation; the body is a `ValidationProblemDetails` with a per-property error list |
+| `Request.RateLimited` | 429 | The client's quota for the current window is exhausted; a `Retry-After` header is included |
+| `Server.Unhandled` | 500 | An unexpected fault; the body carries a `traceId` and no stack trace |
+
+Missing or invalid API keys produce a plain `401` with a `WWW-Authenticate: ApiKey` header.
 
 ```json
 {
@@ -238,7 +291,8 @@ as an embedded resource at build time; no code changes, no registration.
 
 Optional per holiday: `types` (defaults to `["Public"]`), `substitution`
 (`none` | `nextWorkday` | `nearestWorkday`), and for `hijri` rules `length` and
-`dayAdjustment`.
+`dayAdjustment`. A malformed file fails fast with an `InvalidOperationException` naming the
+offending holiday rather than silently producing an empty calendar.
 
 ---
 
@@ -248,6 +302,10 @@ Optional per holiday: `types` (defaults to `["Public"]`), `substitution`
 
 - [.NET 9 SDK](https://dotnet.microsoft.com/download/dotnet/9.0)
 - Nothing else. No database, no network access, no API keys to anyone else's service.
+
+> Running the tests needs the .NET **9 runtime** as well as the SDK. If `dotnet test` exits
+> with *"You must install or update .NET to run this application"* while `dotnet build`
+> succeeds, the SDK in use is resolving to an installation that only ships an older runtime.
 
 ### Local
 
@@ -290,12 +348,14 @@ e.g. `HolidayData__CacheDuration=06:00:00`.
 | `HolidayData:HijriDayAdjustment` | `0` | Shifts every Hijri-derived holiday by ±1–2 days |
 | `RateLimiting:PermitLimit` | `100` | Requests per window, per client |
 | `RateLimiting:WindowSeconds` | `60` | Window length |
+| `RateLimiting:QueueLimit` | `0` | Requests allowed to wait for the next window |
 | `ApiKeys:Enabled` | `true` | Set to `false` to run the API open |
 | `ApiKeys:Clients:N:Owner` / `:Key` | — | Issued keys |
 
 **Keys are never committed.** Development uses the value in
 `appsettings.Development.json`; anything else supplies keys through environment variables
-or `dotnet user-secrets`.
+or `dotnet user-secrets`. Keys are compared in constant time, and the rate limiter
+partitions on a hash of the key rather than the key itself.
 
 ---
 
@@ -314,11 +374,9 @@ and that was a deliberate constraint rather than an accident:
 | NSubstitute, Shouldly | BSD |
 
 **MediatR is deliberately absent.** It went commercial — current versions ask for a licence
-key — so the mediator here is a ~60-line `QueryDispatcher` in `Application/Messaging`. It
-resolves the handler for a query, wraps it in the registered behaviors and caches the closed
-generic executor per query type. The CQRS shape, the pipeline and the handler signatures are
-unchanged; the dependency is gone. Shouldly and NSubstitute are used in place of
-FluentAssertions and Moq for the same reason.
+key — so the mediator here is a small `QueryDispatcher` in `Application/Messaging`. The CQRS
+shape, the pipeline and the handler signatures are unchanged; the dependency is gone.
+Shouldly and NSubstitute are used in place of FluentAssertions and Moq for the same reason.
 
 ---
 
@@ -328,27 +386,57 @@ FluentAssertions and Moq for the same reason.
 dotnet test
 ```
 
-The suite covers the parts where the logic actually lives: Easter against twelve known
-dates and two centuries of invariants; each rule kind including last-weekday and
-February 29; all three substitution policies and the collision case where two substituted
-holidays compete for the same Monday; business-day arithmetic across weekends, holidays and
-negative shifts; long-weekend and bridge-day detection; country-specific weekends;
-`CountryCode` normalisation; the `Result` contract; and the validation behavior.
+The suite covers the parts where the logic actually lives:
 
-The highest-value test loads the five embedded calendars and asserts their **complete 2026
-output, date by date** — including the UK's Boxing Day substitute, the US Independence Day
-observance and Germany's unsubstituted Saturday. A second test materialises every country
-across 1990–2060 to prove no year throws and no holiday escapes its own year.
+- **Easter** against twelve known dates, plus two centuries of invariants (always a Sunday,
+  always between 22 March and 25 April).
+- **Each rule kind** — fixed dates including 29 February in a common year, *n*-th weekday
+  including `-1` for the last, Easter offsets, and Hijri runs.
+- **All three substitution policies**, including the collision case where two substituted
+  holidays compete for the same Monday.
+- **Business-day arithmetic** across weekends, holidays, zero and negative shifts;
+  long-weekend and bridge-day detection; country-specific weekends such as Saudi Arabia's
+  Friday/Saturday.
+- **`CountryCode` normalisation**, the `Result` contract, the validation behavior and the
+  `QueryDispatcher` — including that behaviors wrap the handler in registration order and
+  that a missing handler fails loudly.
+- **The embedded calendars.** The US, UK, German and Spanish calendars are asserted for
+  2026 date by date, including the UK's Boxing Day substitute and the US Independence Day
+  observance. Türkiye's fixed national holidays are asserted exactly; its two feasts are
+  asserted structurally and within a day of the observed date, which is the accuracy the
+  tabular Hijri calendar offers. A final test materialises every country across 1990–2060
+  to prove no year throws and no holiday escapes its own year.
+
+---
+
+## Known limitations
+
+- **Religious holidays are computed, not authoritative.** See above; they are flagged
+  `isEstimated` and can be nudged with `HijriDayAdjustment`.
+- **National holidays only.** German *Länder* and Spanish *comunidades* have their own days;
+  the API returns the nationwide set and has no subdivision filter.
+- **No integration tests.** The rule engine and handlers are well covered, but the HTTP
+  wiring — routing, API-key authentication, rate limiting, problem-details shapes and the DI
+  graph — currently has no automated coverage. Because the dispatcher resolves handlers
+  reflectively, a missing registration would only surface at runtime.
+- **No HTTP caching.** Past years are immutable, yet responses carry no `ETag` or
+  `Cache-Control`, so clients and CDNs cannot cache them.
+- **`/health` is cosmetic.** No checks are registered, so it always reports healthy.
+- **Swagger is served in every environment**, production included.
+- **Single-instance cache.** `ICacheService` is backed by `IMemoryCache`; a multi-instance
+  deployment would want Redis behind the same interface.
 
 ---
 
 ## Possible next steps
 
-- **More countries** — the engine is ready; each one is a JSON file
-- **Subdivision support** — German *Länder* and Spanish *comunidades* have their own days
-- **Redis** behind `ICacheService` for a multi-instance deployment
-- **OpenTelemetry** traces and metrics, plus Serilog structured sinks
-- **`/api/v2`** returning official Diyanet dates for Türkiye instead of computed ones
+In rough priority order:
+
+- Integration tests over `WebApplicationFactory` — no stubbing needed now that the data is local
+- `ETag` / `Cache-Control` on holiday responses, and a real readiness check
+- Subdivision support, and more countries — the engine is ready, each one is a JSON file
+- OpenTelemetry traces and metrics, plus Serilog structured sinks
+- `/api/v2` returning officially published feast dates for Türkiye instead of computed ones
 
 ---
 

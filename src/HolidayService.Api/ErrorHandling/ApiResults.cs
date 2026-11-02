@@ -49,7 +49,7 @@ public static class ApiResults
         ErrorType.Validation => "Invalid request",
         ErrorType.NotFound => "Resource not found",
         ErrorType.Conflict => "Conflicting state",
-        ErrorType.Unavailable => "Upstream provider unavailable",
+        ErrorType.Unavailable => "Service unavailable",
         _ => "Unexpected failure"
     };
 }
