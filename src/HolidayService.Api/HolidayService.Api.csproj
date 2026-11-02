@@ -16,8 +16,4 @@
     <ProjectReference Include="..\HolidayService.Infrastructure\HolidayService.Infrastructure.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <InternalsVisibleTo Include="HolidayService.IntegrationTests" />
-  </ItemGroup>
-
 </Project>

@@ -250,10 +250,6 @@ mistake and becomes a `ValidationAppException` in the pipeline, translated to a 
 "This country does not exist upstream" is an outcome, and travels as `Result.Failure` to a
 404. Mixing the two is what makes error handling drift.
 
-**xUnit over Testcontainers.** There is no database or broker to containerise, so the
-dependency worth faking is the upstream HTTP boundary — which `WireMock.Net` does inside the
-test process, with no Docker daemon needed in CI.
-
 **Shouldly and NSubstitute** rather than FluentAssertions and Moq: both are permissively
 licensed with no commercial tier, which matters for a repository that anyone can clone.
 
@@ -265,19 +261,11 @@ licensed with no commercial tier, which matters for a repository that anyone can
 dotnet test
 ```
 
-**Unit tests** (`tests/HolidayService.UnitTests`) cover the parts where the logic actually
-lives: business-day arithmetic across weekends, holidays and negative shifts; long-weekend
-and bridge-day detection; country-specific weekends; `CountryCode` normalisation; the
-`Result` contract; the validation behavior; and the upstream mapper against every payload
-shape it can receive, including malformed ones.
-
-**Integration tests** (`tests/HolidayService.IntegrationTests`) boot the real pipeline with
-`WebApplicationFactory` against a `WireMock.Net` stand-in for the upstream API, with a frozen
-clock so date-relative endpoints are deterministic. They assert the things unit tests
-cannot: routing and model binding, that a missing or wrong API key is a 401, that bad input
-produces problem details with the right keys, that an upstream 500 becomes a 503 and an
-upstream 404 becomes a 404, that a repeated request hits the upstream only once, that a
-failed call is *not* cached, and that the OpenAPI document is generated.
+`tests/HolidayService.UnitTests` covers the parts where the logic actually lives:
+business-day arithmetic across weekends, holidays and negative shifts; long-weekend and
+bridge-day detection; country-specific weekends; `CountryCode` normalisation; the `Result`
+contract; the validation behavior; and the upstream mapper against every payload shape it
+can receive, including malformed ones.
 
 ---
 

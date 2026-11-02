@@ -21,7 +21,6 @@
 
   <ItemGroup>
     <InternalsVisibleTo Include="HolidayService.UnitTests" />
-    <InternalsVisibleTo Include="HolidayService.IntegrationTests" />
   </ItemGroup>
 
 </Project>
