@@ -2,6 +2,7 @@ using HolidayService.Application.Abstractions.Providers;
 using HolidayService.Application.Contracts;
 using HolidayService.Application.Holidays.Queries.GetDayStatus;
 using HolidayService.Domain.Common;
+using HolidayService.Domain.Countries;
 using HolidayService.Domain.Holidays;
 using HolidayService.UnitTests.TestData;
 using NSubstitute;
@@ -76,17 +77,17 @@ public sealed class GetDayStatusTests
     }
 
     [Fact]
-    public async Task Handle_PropagatesProviderFailure()
+    public async Task Handle_PropagatesUnsupportedCountryAsNotFound()
     {
         _provider
-            .GetHolidaysAsync(HolidayFactory.Turkey, Arg.Any<int>(), Arg.Any<CancellationToken>())
-            .Returns(Result.Failure<IReadOnlyList<Holiday>>(HolidayErrors.ProviderUnavailable));
+            .GetHolidaysAsync(Arg.Any<CountryCode>(), Arg.Any<int>(), Arg.Any<CancellationToken>())
+            .Returns(Result.Failure<IReadOnlyList<Holiday>>(CountryErrors.NotSupported("XX")));
 
         Result<DayStatusResponse> result = await CreateHandler().Handle(
-            new GetDayStatusQuery("TR", new DateOnly(2026, 1, 5)),
+            new GetDayStatusQuery("XX", new DateOnly(2026, 1, 5)),
             CancellationToken.None);
 
         result.IsFailure.ShouldBeTrue();
-        result.Error.Type.ShouldBe(ErrorType.Unavailable);
+        result.Error.Type.ShouldBe(ErrorType.NotFound);
     }
 }
