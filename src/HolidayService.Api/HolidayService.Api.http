@@ -1,0 +1,64 @@
+@host = http://localhost:5080
+@apiKey = dev-local-key
+
+### Supported countries
+GET {{host}}/api/v1/countries
+X-API-Key: {{apiKey}}
+
+### Country profile
+GET {{host}}/api/v1/countries/TR
+X-API-Key: {{apiKey}}
+
+### Holidays for a year
+GET {{host}}/api/v1/holidays/TR/2026
+X-API-Key: {{apiKey}}
+
+### Holidays for a month
+GET {{host}}/api/v1/holidays/TR/2026/4
+X-API-Key: {{apiKey}}
+
+### Holidays in a date range
+GET {{host}}/api/v1/holidays/TR/range?from=2026-01-01&to=2026-06-30
+X-API-Key: {{apiKey}}
+
+### Next five holidays
+GET {{host}}/api/v1/holidays/TR/next?count=5
+X-API-Key: {{apiKey}}
+
+### Upcoming holidays in the next 60 days
+GET {{host}}/api/v1/holidays/TR/upcoming?days=60
+X-API-Key: {{apiKey}}
+
+### Long weekends
+GET {{host}}/api/v1/holidays/TR/long-weekends/2026
+X-API-Key: {{apiKey}}
+
+### Holiday statistics
+GET {{host}}/api/v1/holidays/TR/statistics/2026
+X-API-Key: {{apiKey}}
+
+### Is this date a holiday?
+GET {{host}}/api/v1/holidays/TR/check?date=2026-04-23
+X-API-Key: {{apiKey}}
+
+### Upcoming holidays worldwide
+GET {{host}}/api/v1/holidays/worldwide/upcoming
+X-API-Key: {{apiKey}}
+
+### Workday breakdown of a range
+GET {{host}}/api/v1/workdays/TR/count?from=2026-01-01&to=2026-03-31
+X-API-Key: {{apiKey}}
+
+### Add ten business days
+GET {{host}}/api/v1/workdays/TR/shift?startDate=2026-04-20&workdays=10
+X-API-Key: {{apiKey}}
+
+### Is this date a workday?
+GET {{host}}/api/v1/workdays/TR/status?date=2026-04-23
+X-API-Key: {{apiKey}}
+
+### Health
+GET {{host}}/health
+
+### Unauthorised request (expect 401)
+GET {{host}}/api/v1/holidays/TR/2026

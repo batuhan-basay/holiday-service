@@ -1,0 +1,49 @@
+## .NET
+bin/
+obj/
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+[Ww][Ii][Nn]32/
+[Aa][Rr][Mm]/
+artifacts/
+publish/
+*.user
+*.suo
+*.userprefs
+*.binlog
+project.lock.json
+project.fragment.lock.json
+
+## Test results / coverage
+[Tt]est[Rr]esult*/
+coverage*.json
+coverage*.xml
+coverage*.info
+*.coverage
+*.coveragexml
+TestResults/
+
+## IDE
+.vs/
+.vscode/*
+!.vscode/launch.json
+!.vscode/tasks.json
+.idea/
+*.sln.iml
+*.DotSettings.user
+
+## OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+## Secrets & local config
+appsettings.Local.json
+appsettings.*.Local.json
+*.pfx
+*.p12
+.env
+.env.*
+!.env.example
