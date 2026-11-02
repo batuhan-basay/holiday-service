@@ -4,10 +4,6 @@ using Microsoft.Extensions.Caching.Memory;
 
 namespace HolidayService.Infrastructure.Caching;
 
-/// <summary>
-/// In-process cache. <see cref="GetOrCreateAsync{T}"/> serialises concurrent misses on the
-/// same key so a cold start does not fan out one upstream call per in-flight request.
-/// </summary>
 internal sealed class MemoryCacheService(IMemoryCache cache) : ICacheService, IDisposable
 {
     private static readonly TimeSpan DefaultExpiration = TimeSpan.FromMinutes(30);

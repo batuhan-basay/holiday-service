@@ -9,10 +9,6 @@ namespace HolidayService.Api.RateLimiting;
 
 public static class RateLimitingExtensions
 {
-    /// <summary>
-    /// Adds a fixed-window limiter partitioned by API key, falling back to the remote IP for
-    /// unauthenticated traffic — so one noisy client cannot consume another client's budget.
-    /// </summary>
     public static IServiceCollection AddClientRateLimiting(
         this IServiceCollection services,
         IConfiguration configuration)

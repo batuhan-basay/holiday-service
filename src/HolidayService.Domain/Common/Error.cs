@@ -1,8 +1,5 @@
 namespace HolidayService.Domain.Common;
 
-/// <summary>
-/// A machine-readable failure. Business outcomes travel as values, not exceptions.
-/// </summary>
 public sealed record Error(string Code, string Description, ErrorType Type)
 {
     public static readonly Error None = new(string.Empty, string.Empty, ErrorType.Failure);

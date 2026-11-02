@@ -3,10 +3,6 @@ using HolidayService.Domain.Holidays;
 
 namespace HolidayService.Domain.Calendar;
 
-/// <summary>
-/// Business-day arithmetic for one country. Holidays are indexed once on construction so
-/// repeated day-by-day walks stay O(1) per day.
-/// </summary>
 public sealed class WorkCalendar
 {
     private readonly Dictionary<DateOnly, Holiday> _holidaysByDate;
@@ -40,7 +36,6 @@ public sealed class WorkCalendar
 
     public bool IsWorkday(DateOnly date) => !IsWeekend(date) && !IsPublicHoliday(date);
 
-    /// <summary>Counts workdays in an inclusive range. Returns 0 when the range is inverted.</summary>
     public int CountWorkdays(DateOnly from, DateOnly to)
     {
         if (to < from)
@@ -61,11 +56,6 @@ public sealed class WorkCalendar
         return count;
     }
 
-    /// <summary>
-    /// Moves <paramref name="workdays"/> business days away from <paramref name="start"/>.
-    /// The start date itself is never counted; a count of 0 returns it unchanged.
-    /// Negative counts walk backwards.
-    /// </summary>
     public DateOnly AddWorkdays(DateOnly start, int workdays)
     {
         if (workdays == 0)
@@ -90,17 +80,10 @@ public sealed class WorkCalendar
         return current;
     }
 
-    /// <summary>The next workday strictly after <paramref name="date"/>.</summary>
     public DateOnly NextWorkday(DateOnly date) => AddWorkdays(date, 1);
 
-    /// <summary>The previous workday strictly before <paramref name="date"/>.</summary>
     public DateOnly PreviousWorkday(DateOnly date) => AddWorkdays(date, -1);
 
-    /// <summary>
-    /// Finds every stretch of consecutive non-working days inside <paramref name="year"/>.
-    /// A stretch qualifies as a long weekend once it reaches three days, or when a single
-    /// bridge day would join a holiday to the weekend.
-    /// </summary>
     public IReadOnlyList<LongWeekend> FindLongWeekends(int year, bool includeBridgeDays = true)
     {
         var results = new List<LongWeekend>();
@@ -147,10 +130,6 @@ public sealed class WorkCalendar
         return results;
     }
 
-    /// <summary>
-    /// Checks whether a single day off immediately before or after a two-day stretch would
-    /// extend it to at least four days.
-    /// </summary>
     private LongWeekend? TryBridge(DateOnly start, DateOnly end, DateOnly yearStart, DateOnly yearEnd)
     {
         DateOnly dayBefore = start.AddDays(-1);

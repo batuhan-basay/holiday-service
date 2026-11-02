@@ -102,5 +102,4 @@ app.MapGet("/", () => Results.Redirect("/swagger")).ExcludeFromDescription();
 
 await app.RunAsync().ConfigureAwait(false);
 
-/// <summary>Exposed so the integration test host can boot the real pipeline.</summary>
 public partial class Program;

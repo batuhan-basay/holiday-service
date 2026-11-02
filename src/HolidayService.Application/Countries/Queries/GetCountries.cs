@@ -6,7 +6,6 @@ using HolidayService.Domain.Countries;
 
 namespace HolidayService.Application.Countries.Queries;
 
-/// <summary>Every country the service can return holidays for.</summary>
 public static class GetCountries
 {
     public sealed record Query : IQuery<IReadOnlyList<CountryResponse>>;

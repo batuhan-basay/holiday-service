@@ -10,11 +10,6 @@ using HolidayService.Domain.Holidays;
 
 namespace HolidayService.Application.Holidays.Queries;
 
-/// <summary>
-/// Stretches of consecutive days off in a year. Computed locally rather than taken from the
-/// upstream provider so the country's own weekend definition is honoured — the upstream feed
-/// assumes a Saturday/Sunday weekend everywhere.
-/// </summary>
 public static class GetLongWeekends
 {
     public sealed record Query(string CountryCode, int Year, bool IncludeBridgeDays = true)

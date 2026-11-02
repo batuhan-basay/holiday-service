@@ -2,7 +2,6 @@ using FluentValidation;
 
 namespace HolidayService.Application.Abstractions;
 
-/// <summary>Validation rules shared by every query that takes a country or a year.</summary>
 public static class ValidationRules
 {
     public static IRuleBuilderOptions<T, string> MustBeCountryCode<T>(

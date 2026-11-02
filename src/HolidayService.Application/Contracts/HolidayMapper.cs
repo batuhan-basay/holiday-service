@@ -4,10 +4,6 @@ using HolidayService.Domain.Holidays;
 
 namespace HolidayService.Application.Contracts;
 
-/// <summary>
-/// Hand-written domain to contract mapping. Explicit mapping keeps the wire format an
-/// intentional decision rather than a side effect of renaming a domain property.
-/// </summary>
 public static class HolidayMapper
 {
     public static HolidayResponse ToResponse(this Holiday holiday)

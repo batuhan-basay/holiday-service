@@ -12,11 +12,6 @@ namespace HolidayService.Infrastructure;
 
 public static class DependencyInjection
 {
-    /// <summary>
-    /// Wires the upstream client, its resilience pipeline and the caching decorator.
-    /// <see cref="IHolidayProvider"/> resolves to the cached decorator; the raw client is
-    /// only reachable by the decorator itself.
-    /// </summary>
     public static IServiceCollection AddInfrastructure(
         this IServiceCollection services,
         IConfiguration configuration)

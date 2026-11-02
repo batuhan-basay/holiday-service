@@ -9,7 +9,6 @@ using HolidayService.Domain.Holidays;
 
 namespace HolidayService.Application.Holidays.Queries;
 
-/// <summary>Every holiday published for one country in one calendar year.</summary>
 public static class GetHolidaysByYear
 {
     public sealed record Query(

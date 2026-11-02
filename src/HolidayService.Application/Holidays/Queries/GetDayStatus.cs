@@ -10,10 +10,6 @@ using HolidayService.Domain.Holidays;
 
 namespace HolidayService.Application.Holidays.Queries;
 
-/// <summary>
-/// Answers whether a given date is a public holiday, a weekend day or a workday in one call.
-/// Backs both <c>/holidays/{code}/check</c> and <c>/workdays/{code}/status</c>.
-/// </summary>
 public static class GetDayStatus
 {
     public sealed record Query(string CountryCode, DateOnly Date) : IQuery<DayStatusResponse>;

@@ -5,10 +5,6 @@ using MediatR;
 
 namespace HolidayService.Application.Behaviors;
 
-/// <summary>
-/// Runs every registered validator for a request before the handler sees it, so handlers
-/// may assume well-formed input.
-/// </summary>
 internal sealed class ValidationBehavior<TRequest, TResponse>(
     IEnumerable<IValidator<TRequest>> validators)
     : IPipelineBehavior<TRequest, TResponse>

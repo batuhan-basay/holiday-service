@@ -2,7 +2,6 @@ using System.Text.Json.Serialization;
 
 namespace HolidayService.Infrastructure.Nager;
 
-/// <summary>Wire format of <c>GET /api/v3/PublicHolidays/{year}/{countryCode}</c>.</summary>
 internal sealed record NagerPublicHoliday
 {
     [JsonPropertyName("date")]
@@ -33,7 +32,6 @@ internal sealed record NagerPublicHoliday
     public IReadOnlyList<string>? Types { get; init; }
 }
 
-/// <summary>Wire format of <c>GET /api/v3/AvailableCountries</c>.</summary>
 internal sealed record NagerCountry
 {
     [JsonPropertyName("countryCode")]
@@ -43,7 +41,6 @@ internal sealed record NagerCountry
     public string? Name { get; init; }
 }
 
-/// <summary>Wire format of <c>GET /api/v3/CountryInfo/{countryCode}</c>.</summary>
 internal sealed record NagerCountryInfo
 {
     [JsonPropertyName("commonName")]

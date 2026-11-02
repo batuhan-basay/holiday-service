@@ -2,7 +2,6 @@ using HolidayService.Domain.Holidays;
 
 namespace HolidayService.Application.Holidays;
 
-/// <summary>Optional narrowing applied to a holiday set after it is loaded.</summary>
 public static class HolidayFilter
 {
     public static IEnumerable<Holiday> Apply(

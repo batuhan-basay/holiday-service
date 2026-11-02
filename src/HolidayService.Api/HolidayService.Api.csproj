@@ -3,8 +3,6 @@
   <PropertyGroup>
     <RootNamespace>HolidayService.Api</RootNamespace>
     <UserSecretsId>holiday-service-api</UserSecretsId>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-    <NoWarn>$(NoWarn);CS1591</NoWarn>
   </PropertyGroup>
 
   <ItemGroup>

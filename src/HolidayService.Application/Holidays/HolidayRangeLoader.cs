@@ -6,11 +6,6 @@ using HolidayService.Domain.Holidays;
 
 namespace HolidayService.Application.Holidays;
 
-/// <summary>
-/// Loads holidays for an arbitrary date range by fetching the whole calendar year for every
-/// year the range touches. Year-sized fetches are what the upstream API and the cache are
-/// keyed on, so a range query for three days still reuses a cached year.
-/// </summary>
 public sealed class HolidayRangeLoader(IHolidayProvider provider)
 {
     public async Task<Result<IReadOnlyList<Holiday>>> LoadAsync(

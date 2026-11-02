@@ -3,7 +3,6 @@ using HolidayService.Domain.Countries;
 
 namespace HolidayService.Infrastructure.Caching;
 
-/// <summary>One place that owns the cache key format, so keys cannot drift between callers.</summary>
 internal static class CacheKeys
 {
     public static string Holidays(CountryCode countryCode, int year) =>

@@ -9,16 +9,6 @@ using Microsoft.Extensions.Options;
 
 namespace HolidayService.Infrastructure.Caching;
 
-/// <summary>
-/// Decorator that adds cache-aside behaviour to any <see cref="IHolidayProvider"/>.
-/// <para>
-/// Caching lives here rather than in a MediatR behavior on purpose: every query in the
-/// application layer is composed from whole-year holiday sets, so caching at the provider
-/// makes one upstream call serve the year, month, range, upcoming, long-weekend and
-/// workday queries alike.
-/// </para>
-/// Only successful results are cached — a provider outage must not be remembered.
-/// </summary>
 internal sealed class CachedHolidayProvider(
     IHolidayProvider inner,
     ICacheService cache,
@@ -144,9 +134,6 @@ internal sealed class CachedHolidayProvider(
         return result;
     }
 
-    /// <summary>
-    /// Past years no longer change, so they are held far longer than the current year.
-    /// </summary>
     private TimeSpan ExpirationFor(int year) => year < clock.Today.Year
         ? _options.HistoricalCacheDuration
         : _options.CacheDuration;

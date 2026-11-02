@@ -1,6 +1,5 @@
 namespace HolidayService.Application.Abstractions;
 
-/// <summary>The year window the upstream provider publishes data for.</summary>
 public static class SupportedYears
 {
     public const int Min = 1975;

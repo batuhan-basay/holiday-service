@@ -9,7 +9,6 @@ using HolidayService.Domain.Holidays;
 
 namespace HolidayService.Application.Holidays.Queries;
 
-/// <summary>Holidays inside a single month — the calendar-widget shaped query.</summary>
 public static class GetHolidaysByMonth
 {
     public sealed record Query(string CountryCode, int Year, int Month)

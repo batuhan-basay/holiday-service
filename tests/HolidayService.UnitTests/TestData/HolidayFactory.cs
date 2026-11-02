@@ -3,7 +3,6 @@ using HolidayService.Domain.Holidays;
 
 namespace HolidayService.UnitTests.TestData;
 
-/// <summary>Builders that keep the arrange step of each test down to the relevant facts.</summary>
 internal static class HolidayFactory
 {
     public static CountryCode Turkey { get; } = CountryCode.Create("TR").Value;

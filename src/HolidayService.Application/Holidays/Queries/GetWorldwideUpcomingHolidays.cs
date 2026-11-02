@@ -6,7 +6,6 @@ using HolidayService.Domain.Holidays;
 
 namespace HolidayService.Application.Holidays.Queries;
 
-/// <summary>The next holidays across every supported country, as published upstream.</summary>
 public static class GetWorldwideUpcomingHolidays
 {
     public sealed record Query : IQuery<IReadOnlyList<HolidayResponse>>;

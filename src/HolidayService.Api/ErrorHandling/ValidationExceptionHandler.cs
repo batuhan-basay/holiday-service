@@ -5,10 +5,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HolidayService.Api.ErrorHandling;
 
-/// <summary>
-/// Turns a failed FluentValidation pipeline into RFC 9457 validation problem details.
-/// Registered before the catch-all handler so malformed input never shows up as a 500.
-/// </summary>
 internal sealed class ValidationExceptionHandler(
     IProblemDetailsService problemDetailsService,
     ILogger<ValidationExceptionHandler> logger) : IExceptionHandler

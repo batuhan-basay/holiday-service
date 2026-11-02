@@ -9,7 +9,6 @@ using HolidayService.Domain.Holidays;
 
 namespace HolidayService.Application.Holidays.Queries;
 
-/// <summary>The next N holidays from today, crossing the year boundary when needed.</summary>
 public static class GetNextHolidays
 {
     public const int MaxCount = 50;

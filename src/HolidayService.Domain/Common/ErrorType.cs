@@ -1,8 +1,5 @@
 namespace HolidayService.Domain.Common;
 
-/// <summary>
-/// Classifies a failure so transport layers can map it without inspecting error codes.
-/// </summary>
 public enum ErrorType
 {
     Failure = 0,

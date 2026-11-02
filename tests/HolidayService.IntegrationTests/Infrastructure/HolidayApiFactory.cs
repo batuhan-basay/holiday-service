@@ -11,28 +11,16 @@ using WireMock.Server;
 
 namespace HolidayService.IntegrationTests.Infrastructure;
 
-/// <summary>
-/// Boots the real request pipeline — routing, authentication, rate limiting, validation,
-/// MediatR, caching — against a stubbed upstream provider. Nothing is mocked inside the
-/// application itself, so these tests fail if any of that wiring breaks.
-/// <para>
-/// A WireMock server stands in for Nager.Date. There is no database to containerise, so a
-/// stubbed HTTP boundary is the equivalent of a Testcontainers dependency here.
-/// </para>
-/// </summary>
 public sealed class HolidayApiFactory : WebApplicationFactory<Program>
 {
     public const string ApiKey = "integration-test-key";
 
-    /// <summary>The date every date-relative endpoint is evaluated against.</summary>
     public static readonly DateOnly Today = new(2026, 3, 2);
 
     public HolidayApiFactory() => Upstream = WireMockServer.Start();
 
-    /// <summary>The stubbed Nager.Date instance the API talks to.</summary>
     public WireMockServer Upstream { get; }
 
-    /// <summary>An authenticated client with the test API key already attached.</summary>
     public HttpClient CreateAuthenticatedClient()
     {
         HttpClient client = CreateClient();
@@ -43,10 +31,6 @@ public sealed class HolidayApiFactory : WebApplicationFactory<Program>
         return client;
     }
 
-    /// <summary>
-    /// Clears the stubbed mappings and the API's in-process cache so each test starts from a
-    /// cold, empty state even though the host is shared across the class.
-    /// </summary>
     public void ResetState()
     {
         Upstream.Reset();

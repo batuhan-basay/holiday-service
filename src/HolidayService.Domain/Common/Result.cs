@@ -1,8 +1,5 @@
 namespace HolidayService.Domain.Common;
 
-/// <summary>
-/// Outcome of an operation that either succeeds or carries a single <see cref="Error"/>.
-/// </summary>
 public class Result
 {
     protected internal Result(bool isSuccess, Error error)
@@ -36,9 +33,6 @@ public class Result
     public static Result<TValue> Failure<TValue>(Error error) => new(default, false, error);
 }
 
-/// <summary>
-/// Outcome of an operation that yields a <typeparamref name="TValue"/> on success.
-/// </summary>
 public sealed class Result<TValue> : Result
 {
     private readonly TValue? _value;

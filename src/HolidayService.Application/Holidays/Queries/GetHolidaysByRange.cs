@@ -8,10 +8,8 @@ using HolidayService.Domain.Holidays;
 
 namespace HolidayService.Application.Holidays.Queries;
 
-/// <summary>Holidays inside an arbitrary inclusive date range, spanning years if needed.</summary>
 public static class GetHolidaysByRange
 {
-    /// <summary>Guard against a caller asking for a century in one request.</summary>
     public const int MaxRangeDays = 1830;
 
     public sealed record Query(string CountryCode, DateOnly From, DateOnly To)

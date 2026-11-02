@@ -4,10 +4,6 @@ using HolidayService.Domain.Holidays;
 
 namespace HolidayService.Application.Abstractions.Providers;
 
-/// <summary>
-/// The upstream source of holiday data. Implemented by the Nager.Date client and wrapped
-/// by a caching decorator; the application layer never learns which is which.
-/// </summary>
 public interface IHolidayProvider
 {
     Task<Result<IReadOnlyList<Holiday>>> GetHolidaysAsync(

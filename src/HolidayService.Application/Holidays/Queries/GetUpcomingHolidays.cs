@@ -9,7 +9,6 @@ using HolidayService.Domain.Holidays;
 
 namespace HolidayService.Application.Holidays.Queries;
 
-/// <summary>Holidays falling within the next N days — the "what's coming up" widget query.</summary>
 public static class GetUpcomingHolidays
 {
     public const int MaxDays = 365;

@@ -7,10 +7,6 @@ namespace HolidayService.Application;
 
 public static class DependencyInjection
 {
-    /// <summary>
-    /// Registers handlers, validators and the request pipeline. Behaviors run in registration
-    /// order, so logging wraps validation and therefore also sees malformed requests.
-    /// </summary>
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
         ArgumentNullException.ThrowIfNull(services);

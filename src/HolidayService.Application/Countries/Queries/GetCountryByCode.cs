@@ -8,7 +8,6 @@ using HolidayService.Domain.Countries;
 
 namespace HolidayService.Application.Countries.Queries;
 
-/// <summary>Full profile for one country, including its land borders.</summary>
 public static class GetCountryByCode
 {
     public sealed record Query(string CountryCode) : IQuery<CountryDetailResponse>;

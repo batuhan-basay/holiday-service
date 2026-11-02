@@ -5,11 +5,6 @@ using Microsoft.Extensions.Logging;
 
 namespace HolidayService.Application.Behaviors;
 
-/// <summary>
-/// Emits one structured log line per request with its outcome and duration. Failed results
-/// are logged at warning level with their error code, which keeps expected failures out of
-/// the exception pipeline while remaining visible in logs.
-/// </summary>
 internal sealed class LoggingBehavior<TRequest, TResponse>(
     ILogger<LoggingBehavior<TRequest, TResponse>> logger)
     : IPipelineBehavior<TRequest, TResponse>

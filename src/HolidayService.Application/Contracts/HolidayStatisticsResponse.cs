@@ -1,6 +1,5 @@
 namespace HolidayService.Application.Contracts;
 
-/// <summary>Aggregated view of a country's holiday year — useful for dashboards.</summary>
 public sealed record HolidayStatisticsResponse(
     string CountryCode,
     int Year,

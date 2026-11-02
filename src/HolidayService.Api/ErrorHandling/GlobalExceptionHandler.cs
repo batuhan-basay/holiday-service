@@ -4,10 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HolidayService.Api.ErrorHandling;
 
-/// <summary>
-/// Catch-all so an unexpected fault still leaves the API with a predictable contract and
-/// never leaks a stack trace to the caller.
-/// </summary>
 internal sealed class GlobalExceptionHandler(
     IProblemDetailsService problemDetailsService,
     ILogger<GlobalExceptionHandler> logger) : IExceptionHandler

@@ -11,10 +11,6 @@ using Polly.Timeout;
 
 namespace HolidayService.Infrastructure.Nager;
 
-/// <summary>
-/// Talks to the public Nager.Date API. Transport faults are translated into domain errors so
-/// the application layer never has to catch an <see cref="HttpRequestException"/>.
-/// </summary>
 internal sealed class NagerHolidayProvider(
     HttpClient httpClient,
     ILogger<NagerHolidayProvider> logger) : IHolidayProvider
@@ -123,10 +119,6 @@ internal sealed class NagerHolidayProvider(
         return Result.Success(holidays);
     }
 
-    /// <summary>
-    /// Single transport funnel: one place that decides how an upstream status code or
-    /// transport fault becomes a domain error.
-    /// </summary>
     private async Task<Result<TPayload>> GetAsync<TPayload>(
         string path,
         Error notFoundError,

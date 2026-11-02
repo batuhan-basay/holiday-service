@@ -10,10 +10,6 @@ using HolidayService.Domain.Holidays;
 
 namespace HolidayService.Application.Workdays.Queries;
 
-/// <summary>
-/// Splits an inclusive range into workdays, weekend days and public holidays — the query
-/// behind SLA, payroll and delivery-date calculations.
-/// </summary>
 public static class CountWorkdays
 {
     public const int MaxRangeDays = 1830;

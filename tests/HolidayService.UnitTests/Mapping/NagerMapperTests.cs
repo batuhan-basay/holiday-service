@@ -4,10 +4,6 @@ using HolidayService.Infrastructure.Nager;
 
 namespace HolidayService.UnitTests.Mapping;
 
-/// <summary>
-/// The upstream payload is the one thing this service does not control, so the
-/// anti-corruption mapping is tested against the shapes it can actually produce.
-/// </summary>
 public sealed class NagerMapperTests
 {
     private static readonly CountryCode Fallback = CountryCode.Create("TR").Value;

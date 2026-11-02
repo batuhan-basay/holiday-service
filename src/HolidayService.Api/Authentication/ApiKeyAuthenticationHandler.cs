@@ -7,10 +7,6 @@ using Microsoft.Extensions.Options;
 
 namespace HolidayService.Api.Authentication;
 
-/// <summary>
-/// Validates the <c>X-API-Key</c> header against the configured clients.
-/// Comparison is constant-time so a wrong key cannot be discovered byte by byte.
-/// </summary>
 internal sealed class ApiKeyAuthenticationHandler(
     IOptionsMonitor<ApiKeyAuthenticationOptions> options,
     ILoggerFactory logger,

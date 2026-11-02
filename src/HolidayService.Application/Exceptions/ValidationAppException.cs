@@ -1,10 +1,5 @@
 namespace HolidayService.Application.Exceptions;
 
-/// <summary>
-/// Raised by the validation pipeline behavior when a request is malformed. Input validation
-/// is a programmer/caller error rather than a business outcome, so it travels as an
-/// exception and is translated to a 400 by the API layer, while business outcomes use Result.
-/// </summary>
 public sealed class ValidationAppException : Exception
 {
     public ValidationAppException(IReadOnlyDictionary<string, string[]> errors)

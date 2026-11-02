@@ -3,10 +3,6 @@ using HolidayService.Domain.Holidays;
 
 namespace HolidayService.Infrastructure.Nager;
 
-/// <summary>
-/// Translates the upstream wire format into domain types. Anti-corruption boundary: a
-/// rename or a new field upstream is absorbed here and nowhere else.
-/// </summary>
 internal static class NagerMapper
 {
     public static Holiday? ToDomain(this NagerPublicHoliday dto, CountryCode fallbackCountry)

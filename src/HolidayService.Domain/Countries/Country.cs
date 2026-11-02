@@ -1,6 +1,5 @@
 namespace HolidayService.Domain.Countries;
 
-/// <summary>Full country profile returned by the upstream provider.</summary>
 public sealed record Country(
     CountryCode Code,
     string CommonName,

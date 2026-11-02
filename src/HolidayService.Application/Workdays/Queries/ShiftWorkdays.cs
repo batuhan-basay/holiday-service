@@ -10,10 +10,6 @@ using HolidayService.Domain.Holidays;
 
 namespace HolidayService.Application.Workdays.Queries;
 
-/// <summary>
-/// Moves a date forward or backward by a number of business days, skipping weekends and
-/// public holidays. Negative values walk backwards.
-/// </summary>
 public static class ShiftWorkdays
 {
     public const int MaxWorkdays = 500;

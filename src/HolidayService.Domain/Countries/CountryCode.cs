@@ -3,10 +3,6 @@ using HolidayService.Domain.Common;
 
 namespace HolidayService.Domain.Countries;
 
-/// <summary>
-/// An ISO 3166-1 alpha-2 country code. Always stored upper-case so it is safe to use
-/// as a cache key and as an equality key across the whole system.
-/// </summary>
 public readonly record struct CountryCode
 {
     private CountryCode(string value) => Value = value;

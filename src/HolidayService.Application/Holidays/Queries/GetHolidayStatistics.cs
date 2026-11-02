@@ -10,10 +10,6 @@ using HolidayService.Domain.Holidays;
 
 namespace HolidayService.Application.Holidays.Queries;
 
-/// <summary>
-/// Aggregated holiday year: how many there are, how many are lost to the weekend, and how
-/// they spread across months and weekdays.
-/// </summary>
 public static class GetHolidayStatistics
 {
     public sealed record Query(string CountryCode, int Year) : IQuery<HolidayStatisticsResponse>;

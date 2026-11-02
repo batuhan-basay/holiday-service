@@ -6,7 +6,6 @@ using WireMock.Server;
 
 namespace HolidayService.IntegrationTests.Infrastructure;
 
-/// <summary>Describes one holiday as the upstream API would publish it.</summary>
 internal sealed record HolidayStub(
     string Date,
     string Name,
@@ -16,7 +15,6 @@ internal sealed record HolidayStub(
     IReadOnlyList<string>? Types = null,
     string? CountryCode = null);
 
-/// <summary>Fluent stubs for the upstream Nager.Date endpoints.</summary>
 internal static class NagerStubs
 {
     private static readonly JsonSerializerOptions SerializerOptions =
@@ -101,7 +99,6 @@ internal static class NagerStubs
         return server.StubJson("/api/v3/NextPublicHolidaysWorldwide", payload);
     }
 
-    /// <summary>Makes the upstream answer with a status code instead of data.</summary>
     public static WireMockServer StubStatus(
         this WireMockServer server,
         string path,

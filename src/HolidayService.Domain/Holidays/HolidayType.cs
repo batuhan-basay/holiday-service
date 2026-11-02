@@ -1,6 +1,5 @@
 namespace HolidayService.Domain.Holidays;
 
-/// <summary>Holiday classification as published by the upstream provider.</summary>
 public enum HolidayType
 {
     Unknown = 0,

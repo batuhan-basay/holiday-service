@@ -4,10 +4,6 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace HolidayService.Api.ErrorHandling;
 
-/// <summary>
-/// Single translation point from a domain <see cref="Error"/> to an HTTP response.
-/// Controllers never choose a status code by hand, so the mapping stays consistent.
-/// </summary>
 public static class ApiResults
 {
     public static ActionResult<TValue> ToActionResult<TValue>(

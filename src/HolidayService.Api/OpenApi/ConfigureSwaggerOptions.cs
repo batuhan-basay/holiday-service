@@ -5,10 +5,6 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 namespace HolidayService.Api.OpenApi;
 
-/// <summary>
-/// Builds one Swagger document per discovered API version and declares the API-key scheme,
-/// so the generated docs stay in sync with the versions the service actually exposes.
-/// </summary>
 internal sealed class ConfigureSwaggerOptions(IApiVersionDescriptionProvider provider)
     : IConfigureNamedOptions<SwaggerGenOptions>
 {
@@ -39,14 +35,6 @@ internal sealed class ConfigureSwaggerOptions(IApiVersionDescriptionProvider pro
         {
             [scheme] = Array.Empty<string>()
         });
-
-        string xmlFile = $"{typeof(ConfigureSwaggerOptions).Assembly.GetName().Name}.xml";
-        string xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
-
-        if (File.Exists(xmlPath))
-        {
-            options.IncludeXmlComments(xmlPath);
-        }
     }
 
     public void Configure(string? name, SwaggerGenOptions options) => Configure(options);
