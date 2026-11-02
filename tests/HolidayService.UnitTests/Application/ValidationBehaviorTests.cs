@@ -1,8 +1,9 @@
 using FluentValidation;
+using HolidayService.Application.Abstractions.Messaging;
 using HolidayService.Application.Behaviors;
-using HolidayService.Application.Exceptions;
-using HolidayService.Application.Holidays.Queries;
 using HolidayService.Application.Contracts;
+using HolidayService.Application.Exceptions;
+using HolidayService.Application.Holidays.Queries.GetHolidaysByYear;
 using HolidayService.Domain.Common;
 
 namespace HolidayService.UnitTests.Application;
@@ -17,14 +18,16 @@ public sealed class ValidationBehaviorTests
             0,
             []));
 
+    private static ValidationBehavior<GetHolidaysByYearQuery, HolidayCollectionResponse> Behavior(
+        params IValidator<GetHolidaysByYearQuery>[] validators) => new(validators);
+
     [Fact]
-    public async Task Handle_InvokesTheHandlerWhenThereAreNoValidators()
+    public async Task HandleAsync_InvokesTheHandlerWhenThereAreNoValidators()
     {
-        var behavior = new ValidationBehavior<GetHolidaysByYear.Query, Result<HolidayCollectionResponse>>([]);
         bool handlerCalled = false;
 
-        Result<HolidayCollectionResponse> result = await behavior.Handle(
-            new GetHolidaysByYear.Query("TR", 2026),
+        Result<HolidayCollectionResponse> result = await Behavior().HandleAsync(
+            new GetHolidaysByYearQuery("TR", 2026),
             () =>
             {
                 handlerCalled = true;
@@ -37,15 +40,13 @@ public sealed class ValidationBehaviorTests
     }
 
     [Fact]
-    public async Task Handle_ThrowsAndSkipsTheHandlerWhenValidationFails()
+    public async Task HandleAsync_ThrowsAndSkipsTheHandlerWhenValidationFails()
     {
-        IValidator<GetHolidaysByYear.Query>[] validators = [new GetHolidaysByYear.Validator()];
-        var behavior = new ValidationBehavior<GetHolidaysByYear.Query, Result<HolidayCollectionResponse>>(validators);
         bool handlerCalled = false;
 
         ValidationAppException exception = await Should.ThrowAsync<ValidationAppException>(
-            async () => await behavior.Handle(
-                new GetHolidaysByYear.Query("TURKEY", 1800),
+            async () => await Behavior(new GetHolidaysByYearQueryValidator()).HandleAsync(
+                new GetHolidaysByYearQuery("TURKEY", 1800),
                 () =>
                 {
                     handlerCalled = true;
@@ -59,16 +60,26 @@ public sealed class ValidationBehaviorTests
     }
 
     [Fact]
-    public async Task Handle_PassesValidRequestsThrough()
+    public async Task HandleAsync_PassesValidRequestsThrough()
     {
-        IValidator<GetHolidaysByYear.Query>[] validators = [new GetHolidaysByYear.Validator()];
-        var behavior = new ValidationBehavior<GetHolidaysByYear.Query, Result<HolidayCollectionResponse>>(validators);
-
-        Result<HolidayCollectionResponse> result = await behavior.Handle(
-            new GetHolidaysByYear.Query("TR", 2026),
-            () => Task.FromResult(HandlerResult),
-            CancellationToken.None);
+        Result<HolidayCollectionResponse> result =
+            await Behavior(new GetHolidaysByYearQueryValidator()).HandleAsync(
+                new GetHolidaysByYearQuery("TR", 2026),
+                () => Task.FromResult(HandlerResult),
+                CancellationToken.None);
 
         result.IsSuccess.ShouldBeTrue();
+    }
+
+    [Fact]
+    public async Task HandleAsync_ReportsEveryFailingPropertyAtOnce()
+    {
+        ValidationAppException exception = await Should.ThrowAsync<ValidationAppException>(
+            async () => await Behavior(new GetHolidaysByYearQueryValidator()).HandleAsync(
+                new GetHolidaysByYearQuery(string.Empty, 99999),
+                () => Task.FromResult(HandlerResult),
+                CancellationToken.None));
+
+        exception.Errors.Count.ShouldBe(2);
     }
 }

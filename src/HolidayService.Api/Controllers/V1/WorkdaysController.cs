@@ -1,9 +1,10 @@
 using Asp.Versioning;
 using HolidayService.Api.RateLimiting;
-using HolidayService.Application.Contracts;
-using HolidayService.Application.Holidays.Queries;
-using HolidayService.Application.Workdays.Queries;
 using HolidayService.Application.Abstractions.Messaging;
+using HolidayService.Application.Contracts;
+using HolidayService.Application.Holidays.Queries.GetDayStatus;
+using HolidayService.Application.Workdays.Queries.CountWorkdays;
+using HolidayService.Application.Workdays.Queries.ShiftWorkdays;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -24,7 +25,7 @@ public sealed class WorkdaysController(IQueryDispatcher dispatcher) : ApiControl
         [FromQuery] DateOnly from,
         [FromQuery] DateOnly to,
         CancellationToken cancellationToken) =>
-        SendAsync(new CountWorkdays.Query(countryCode, from, to), cancellationToken);
+        SendAsync(new CountWorkdaysQuery(countryCode, from, to), cancellationToken);
 
     [HttpGet("{countryCode}/shift", Name = nameof(Shift))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkdayShiftResponse))]
@@ -34,7 +35,7 @@ public sealed class WorkdaysController(IQueryDispatcher dispatcher) : ApiControl
         [FromQuery] DateOnly startDate,
         [FromQuery] int workdays,
         CancellationToken cancellationToken) =>
-        SendAsync(new ShiftWorkdays.Query(countryCode, startDate, workdays), cancellationToken);
+        SendAsync(new ShiftWorkdaysQuery(countryCode, startDate, workdays), cancellationToken);
 
     [HttpGet("{countryCode}/status", Name = nameof(Status))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(DayStatusResponse))]
@@ -43,5 +44,5 @@ public sealed class WorkdaysController(IQueryDispatcher dispatcher) : ApiControl
         string countryCode,
         [FromQuery] DateOnly date,
         CancellationToken cancellationToken) =>
-        SendAsync(new GetDayStatus.Query(countryCode, date), cancellationToken);
+        SendAsync(new GetDayStatusQuery(countryCode, date), cancellationToken);
 }

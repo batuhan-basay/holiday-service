@@ -1,7 +1,7 @@
 using HolidayService.Application.Abstractions.Providers;
 using HolidayService.Application.Contracts;
 using HolidayService.Application.Holidays;
-using HolidayService.Application.Workdays.Queries;
+using HolidayService.Application.Workdays.Queries.CountWorkdays;
 using HolidayService.Domain.Common;
 using HolidayService.Domain.Holidays;
 using HolidayService.UnitTests.TestData;
@@ -13,7 +13,7 @@ public sealed class CountWorkdaysTests
 {
     private readonly IHolidayProvider _provider = Substitute.For<IHolidayProvider>();
 
-    private CountWorkdays.Handler CreateHandler() => new(new HolidayRangeLoader(_provider));
+    private CountWorkdaysQueryHandler CreateHandler() => new(new HolidayRangeLoader(_provider));
 
     private void GivenYear(int year, params Holiday[] holidays) =>
         _provider
@@ -26,7 +26,7 @@ public sealed class CountWorkdaysTests
         GivenYear(2026, HolidayFactory.On(2026, 1, 7, "Mid-week"));
 
         Result<WorkdayCountResponse> result = await CreateHandler().Handle(
-            new CountWorkdays.Query("TR", new DateOnly(2026, 1, 5), new DateOnly(2026, 1, 11)),
+            new CountWorkdaysQuery("TR", new DateOnly(2026, 1, 5), new DateOnly(2026, 1, 11)),
             CancellationToken.None);
 
         result.IsSuccess.ShouldBeTrue();
@@ -42,7 +42,7 @@ public sealed class CountWorkdaysTests
         GivenYear(2026);
 
         Result<WorkdayCountResponse> result = await CreateHandler().Handle(
-            new CountWorkdays.Query("TR", new DateOnly(2026, 2, 1), new DateOnly(2026, 1, 1)),
+            new CountWorkdaysQuery("TR", new DateOnly(2026, 2, 1), new DateOnly(2026, 1, 1)),
             CancellationToken.None);
 
         result.IsFailure.ShouldBeTrue();
@@ -55,10 +55,10 @@ public sealed class CountWorkdaysTests
         GivenYear(2026);
 
         Result<WorkdayCountResponse> result = await CreateHandler().Handle(
-            new CountWorkdays.Query(
+            new CountWorkdaysQuery(
                 "TR",
                 new DateOnly(2026, 1, 1),
-                new DateOnly(2026, 1, 1).AddDays(CountWorkdays.MaxRangeDays)),
+                new DateOnly(2026, 1, 1).AddDays(CountWorkdaysQuery.MaxRangeDays)),
             CancellationToken.None);
 
         result.IsFailure.ShouldBeTrue();
@@ -71,7 +71,7 @@ public sealed class CountWorkdaysTests
         GivenYear(2026);
 
         Result<WorkdayCountResponse> result = await CreateHandler().Handle(
-            new CountWorkdays.Query("TR", new DateOnly(2026, 1, 5), new DateOnly(2026, 1, 5)),
+            new CountWorkdaysQuery("TR", new DateOnly(2026, 1, 5), new DateOnly(2026, 1, 5)),
             CancellationToken.None);
 
         result.Value.TotalDays.ShouldBe(1);

@@ -1,7 +1,7 @@
 using HolidayService.Application.Abstractions.Providers;
 using HolidayService.Application.Contracts;
+using HolidayService.Application.Holidays.Queries.GetNextHolidays;
 using HolidayService.Application.Holidays;
-using HolidayService.Application.Holidays.Queries;
 using HolidayService.Domain.Common;
 using HolidayService.Domain.Holidays;
 using HolidayService.UnitTests.TestData;
@@ -13,7 +13,7 @@ public sealed class GetNextHolidaysTests
 {
     private readonly IHolidayProvider _provider = Substitute.For<IHolidayProvider>();
 
-    private GetNextHolidays.Handler CreateHandler(DateOnly today) =>
+    private GetNextHolidaysQueryHandler CreateHandler(DateOnly today) =>
         new(new HolidayRangeLoader(_provider), new FixedDateTimeProvider(today));
 
     private void GivenYear(int year, params Holiday[] holidays) =>
@@ -33,7 +33,7 @@ public sealed class GetNextHolidaysTests
         GivenYear(2028);
 
         Result<HolidayCollectionResponse> result = await CreateHandler(new DateOnly(2026, 3, 1))
-            .Handle(new GetNextHolidays.Query("TR", 5), CancellationToken.None);
+            .Handle(new GetNextHolidaysQuery("TR", 5), CancellationToken.None);
 
         result.IsSuccess.ShouldBeTrue();
         result.Value.Holidays.Select(static holiday => holiday.Name)
@@ -48,7 +48,7 @@ public sealed class GetNextHolidaysTests
         GivenYear(2028);
 
         Result<HolidayCollectionResponse> result = await CreateHandler(new DateOnly(2026, 12, 30))
-            .Handle(new GetNextHolidays.Query("TR", 2), CancellationToken.None);
+            .Handle(new GetNextHolidaysQuery("TR", 2), CancellationToken.None);
 
         result.Value.Holidays.Count.ShouldBe(2);
         result.Value.Holidays[1].Date.ShouldBe(new DateOnly(2027, 1, 1));
@@ -66,7 +66,7 @@ public sealed class GetNextHolidaysTests
         GivenYear(2028);
 
         Result<HolidayCollectionResponse> result = await CreateHandler(new DateOnly(2026, 1, 1))
-            .Handle(new GetNextHolidays.Query("TR", 2), CancellationToken.None);
+            .Handle(new GetNextHolidaysQuery("TR", 2), CancellationToken.None);
 
         result.Value.Count.ShouldBe(2);
         result.Value.Holidays.Select(static holiday => holiday.Name).ShouldBe(new[] { "A", "B" });
@@ -80,7 +80,7 @@ public sealed class GetNextHolidaysTests
         GivenYear(2028);
 
         Result<HolidayCollectionResponse> result = await CreateHandler(new DateOnly(2026, 5, 19))
-            .Handle(new GetNextHolidays.Query("TR", 1), CancellationToken.None);
+            .Handle(new GetNextHolidaysQuery("TR", 1), CancellationToken.None);
 
         result.Value.Holidays.ShouldHaveSingleItem().Date.ShouldBe(new DateOnly(2026, 5, 19));
     }

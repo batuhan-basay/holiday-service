@@ -1,6 +1,6 @@
 using HolidayService.Application.Abstractions.Providers;
 using HolidayService.Application.Contracts;
-using HolidayService.Application.Holidays.Queries;
+using HolidayService.Application.Holidays.Queries.GetDayStatus;
 using HolidayService.Domain.Common;
 using HolidayService.Domain.Holidays;
 using HolidayService.UnitTests.TestData;
@@ -12,7 +12,7 @@ public sealed class GetDayStatusTests
 {
     private readonly IHolidayProvider _provider = Substitute.For<IHolidayProvider>();
 
-    private GetDayStatus.Handler CreateHandler() => new(_provider);
+    private GetDayStatusQueryHandler CreateHandler() => new(_provider);
 
     private void GivenHolidays(params Holiday[] holidays) =>
         _provider
@@ -25,7 +25,7 @@ public sealed class GetDayStatusTests
         GivenHolidays(HolidayFactory.On(2026, 4, 23, "National Sovereignty Day"));
 
         Result<DayStatusResponse> result = await CreateHandler().Handle(
-            new GetDayStatus.Query("TR", new DateOnly(2026, 4, 23)),
+            new GetDayStatusQuery("TR", new DateOnly(2026, 4, 23)),
             CancellationToken.None);
 
         result.IsSuccess.ShouldBeTrue();
@@ -41,7 +41,7 @@ public sealed class GetDayStatusTests
         GivenHolidays();
 
         Result<DayStatusResponse> result = await CreateHandler().Handle(
-            new GetDayStatus.Query("TR", new DateOnly(2026, 1, 5)),
+            new GetDayStatusQuery("TR", new DateOnly(2026, 1, 5)),
             CancellationToken.None);
 
         result.Value.IsWorkday.ShouldBeTrue();
@@ -57,7 +57,7 @@ public sealed class GetDayStatusTests
         GivenHolidays();
 
         Result<DayStatusResponse> result = await CreateHandler().Handle(
-            new GetDayStatus.Query("TR", new DateOnly(2026, 1, 3)),
+            new GetDayStatusQuery("TR", new DateOnly(2026, 1, 3)),
             CancellationToken.None);
 
         result.Value.IsWeekend.ShouldBeTrue();
@@ -68,7 +68,7 @@ public sealed class GetDayStatusTests
     public async Task Handle_PropagatesAnInvalidCountryCodeAsValidationError()
     {
         Result<DayStatusResponse> result = await CreateHandler().Handle(
-            new GetDayStatus.Query("TUR", new DateOnly(2026, 1, 5)),
+            new GetDayStatusQuery("TUR", new DateOnly(2026, 1, 5)),
             CancellationToken.None);
 
         result.IsFailure.ShouldBeTrue();
@@ -83,7 +83,7 @@ public sealed class GetDayStatusTests
             .Returns(Result.Failure<IReadOnlyList<Holiday>>(HolidayErrors.ProviderUnavailable));
 
         Result<DayStatusResponse> result = await CreateHandler().Handle(
-            new GetDayStatus.Query("TR", new DateOnly(2026, 1, 5)),
+            new GetDayStatusQuery("TR", new DateOnly(2026, 1, 5)),
             CancellationToken.None);
 
         result.IsFailure.ShouldBeTrue();

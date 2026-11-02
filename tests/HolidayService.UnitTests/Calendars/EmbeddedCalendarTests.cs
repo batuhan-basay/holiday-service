@@ -27,25 +27,91 @@ public sealed class EmbeddedCalendarTests
     public void Catalog_RejectsACountryItDoesNotCover() =>
         Catalog.TryGet(CountryCode.Create("FR").Value, out _).ShouldBeFalse();
 
+    private static IReadOnlyList<Holiday> HolidaysFor(string code, int year)
+    {
+        Catalog.TryGet(CountryCode.Create(code).Value, out HolidayCalendar calendar)
+            .ShouldBeTrue($"'{code}' should be an embedded calendar");
+
+        return calendar.ForYear(year);
+    }
+
     [Fact]
-    public void Turkey_Produces2026AsPublished() =>
-        DatesFor("TR", 2026).ShouldBe(new[]
+    public void Turkey_ProducesItsFixedNationalHolidaysExactly()
+    {
+        IReadOnlyList<DateOnly> exact =
+        [
+            .. HolidaysFor("TR", 2026)
+                .Where(static holiday => !holiday.IsEstimated)
+                .Select(static holiday => holiday.Date)
+        ];
+
+        exact.ShouldBe(new[]
         {
             new DateOnly(2026, 1, 1),
-            new DateOnly(2026, 3, 20),
-            new DateOnly(2026, 3, 21),
-            new DateOnly(2026, 3, 22),
             new DateOnly(2026, 4, 23),
             new DateOnly(2026, 5, 1),
             new DateOnly(2026, 5, 19),
-            new DateOnly(2026, 5, 27),
-            new DateOnly(2026, 5, 28),
-            new DateOnly(2026, 5, 29),
-            new DateOnly(2026, 5, 30),
             new DateOnly(2026, 7, 15),
             new DateOnly(2026, 8, 30),
             new DateOnly(2026, 10, 29)
         });
+    }
+
+    [Fact]
+    public void Turkey_MarksOnlyTheReligiousFeastsAsEstimated()
+    {
+        foreach (Holiday holiday in HolidaysFor("TR", 2026))
+        {
+            bool isReligious = holiday.LocalName is "Ramazan Bayramı" or "Kurban Bayramı";
+
+            holiday.IsEstimated.ShouldBe(
+                isReligious,
+                $"{holiday.LocalName} on {holiday.Date:yyyy-MM-dd}");
+        }
+    }
+
+    [Theory]
+    [InlineData("Ramazan Bayramı", 3)]
+    [InlineData("Kurban Bayramı", 4)]
+    public void Turkey_ProducesEachFeastAsConsecutiveDays(string localName, int expectedLength)
+    {
+        IReadOnlyList<DateOnly> dates =
+        [
+            .. HolidaysFor("TR", 2026)
+                .Where(holiday => holiday.LocalName == localName)
+                .Select(static holiday => holiday.Date)
+                .Order()
+        ];
+
+        dates.Count.ShouldBe(expectedLength);
+
+        for (int i = 1; i < dates.Count; i++)
+        {
+            dates[i].ShouldBe(dates[i - 1].AddDays(1));
+        }
+    }
+
+    [Theory]
+    [InlineData("Ramazan Bayramı", 2026, 3, 20)]
+    [InlineData("Kurban Bayramı", 2026, 5, 27)]
+    public void Turkey_ReligiousFeastsStayWithinADayOfTheObservedDate(
+        string localName,
+        int year,
+        int month,
+        int day)
+    {
+        DateOnly observed = new(year, month, day);
+
+        DateOnly computed = HolidaysFor("TR", year)
+            .Where(holiday => holiday.LocalName == localName)
+            .Min(static holiday => holiday.Date);
+
+        int drift = Math.Abs(computed.DayNumber - observed.DayNumber);
+
+        drift.ShouldBeLessThanOrEqualTo(
+            1,
+            $"{localName} computed as {computed:yyyy-MM-dd}, observed {observed:yyyy-MM-dd}");
+    }
 
     [Fact]
     public void UnitedStates_Produces2026WithTheIndependenceDayObservance() =>
@@ -110,22 +176,6 @@ public sealed class EmbeddedCalendarTests
         });
 
     [Fact]
-    public void Turkey_MarksReligiousHolidaysAsEstimatedAndTheRestAsExact()
-    {
-        Catalog.TryGet(CountryCode.Create("TR").Value, out HolidayCalendar calendar).ShouldBeTrue();
-
-        IReadOnlyList<Holiday> holidays = calendar.ForYear(2026);
-
-        holidays
-            .Where(static holiday => holiday.LocalName.Contains("Bayramı", StringComparison.Ordinal))
-            .ShouldAllBe(holiday => holiday.IsEstimated);
-
-        holidays
-            .Where(static holiday => !holiday.IsEstimated)
-            .ShouldAllBe(holiday => holiday.LocalName != "Ramazan Bayramı");
-    }
-
-    [Fact]
     public void EveryCalendar_ProducesHolidaysForEverySupportedYearWithoutThrowing()
     {
         foreach (CountrySummary country in Catalog.Countries)
@@ -143,16 +193,32 @@ public sealed class EmbeddedCalendarTests
     }
 
     [Fact]
-    public void HijriAdjustment_ShiftsReligiousHolidaysOnly()
+    public void HijriAdjustment_ShiftsTheReligiousFeastsAndNothingElse()
     {
         var shifted = new EmbeddedCalendarCatalog(
             Options.Create(new HolidayDataOptions { HijriDayAdjustment = -1 }));
 
         shifted.TryGet(CountryCode.Create("TR").Value, out HolidayCalendar calendar).ShouldBeTrue();
 
-        IReadOnlyList<DateOnly> dates = [.. calendar.ForYear(2026).Select(static h => h.Date)];
+        IReadOnlyList<Holiday> baseline = HolidaysFor("TR", 2026);
+        IReadOnlyList<Holiday> moved = calendar.ForYear(2026);
 
-        dates.ShouldContain(new DateOnly(2026, 3, 19));
-        dates.ShouldContain(new DateOnly(2026, 1, 1));
+        DateOnly BaselineStart(string name) => baseline
+            .Where(holiday => holiday.LocalName == name)
+            .Min(static holiday => holiday.Date);
+
+        DateOnly MovedStart(string name) => moved
+            .Where(holiday => holiday.LocalName == name)
+            .Min(static holiday => holiday.Date);
+
+        MovedStart("Ramazan Bayramı").ShouldBe(BaselineStart("Ramazan Bayramı").AddDays(-1));
+        MovedStart("Kurban Bayramı").ShouldBe(BaselineStart("Kurban Bayramı").AddDays(-1));
+
+        moved
+            .Where(static holiday => !holiday.IsEstimated)
+            .Select(static holiday => holiday.Date)
+            .ShouldBe(baseline
+                .Where(static holiday => !holiday.IsEstimated)
+                .Select(static holiday => holiday.Date));
     }
 }

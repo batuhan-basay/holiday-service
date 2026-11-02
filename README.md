@@ -103,7 +103,7 @@ referenced only by the composition root in `Program.cs`.
 | **Rule engine** | `Domain/Holidays/HolidayRule.cs` | A new country is data plus zero new code, as long as its holidays fit the four rule kinds. |
 | **Strategy** | `SubstitutionPolicy`, `WeekendDefinition` | Weekend days and weekend-substitution are country data, not an `if` ladder. |
 | **CQRS (read side)** | `Application/*/Queries` | Every operation is a query object with one handler; no service class grows into a god object. |
-| **Vertical slices** | one file per query | Query, validator and handler sit together, so a change to an endpoint touches one file. |
+| **Vertical slices** | `*/Queries/<Query>/` | Each query owns a folder holding `XQuery`, `XQueryValidator` and `XQueryHandler`, with the namespace mirroring the path. One endpoint's shape, rules and behaviour sit together and nothing else moves with them. |
 | **Mediator** | `Application/Messaging` | Controllers only translate HTTP to a query. Hand-written rather than taken from a library — see *Dependencies* below. |
 | **Pipeline behaviors** | `Application/Behaviors` | Validation and structured logging apply to every handler without a line of handler code. |
 | **Result pattern** | `Domain/Common/Result.cs` | Expected outcomes — unsupported country, bad range — are return values, not exceptions. |

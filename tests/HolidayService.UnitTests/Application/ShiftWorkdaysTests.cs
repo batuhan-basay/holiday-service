@@ -1,7 +1,7 @@
 using HolidayService.Application.Abstractions.Providers;
 using HolidayService.Application.Contracts;
 using HolidayService.Application.Holidays;
-using HolidayService.Application.Workdays.Queries;
+using HolidayService.Application.Workdays.Queries.ShiftWorkdays;
 using HolidayService.Domain.Common;
 using HolidayService.Domain.Holidays;
 using HolidayService.UnitTests.TestData;
@@ -19,13 +19,13 @@ public sealed class ShiftWorkdaysTests
             .Returns(Result.Success<IReadOnlyList<Holiday>>(
                 [HolidayFactory.On(2026, 1, 6, "Tuesday off")]));
 
-    private ShiftWorkdays.Handler CreateHandler() => new(new HolidayRangeLoader(_provider));
+    private ShiftWorkdaysQueryHandler CreateHandler() => new(new HolidayRangeLoader(_provider));
 
     [Fact]
     public async Task Handle_SkipsWeekendsAndHolidaysGoingForward()
     {
         Result<WorkdayShiftResponse> result = await CreateHandler().Handle(
-            new ShiftWorkdays.Query("TR", new DateOnly(2026, 1, 2), 2),
+            new ShiftWorkdaysQuery("TR", new DateOnly(2026, 1, 2), 2),
             CancellationToken.None);
 
         result.IsSuccess.ShouldBeTrue();
@@ -37,7 +37,7 @@ public sealed class ShiftWorkdaysTests
     public async Task Handle_WalksBackwardsForNegativeValues()
     {
         Result<WorkdayShiftResponse> result = await CreateHandler().Handle(
-            new ShiftWorkdays.Query("TR", new DateOnly(2026, 1, 7), -2),
+            new ShiftWorkdaysQuery("TR", new DateOnly(2026, 1, 7), -2),
             CancellationToken.None);
 
         result.Value.ResultDate.ShouldBe(new DateOnly(2026, 1, 2));
@@ -47,7 +47,7 @@ public sealed class ShiftWorkdaysTests
     public async Task Handle_ReturnsTheStartDateForZero()
     {
         Result<WorkdayShiftResponse> result = await CreateHandler().Handle(
-            new ShiftWorkdays.Query("TR", new DateOnly(2026, 1, 3), 0),
+            new ShiftWorkdaysQuery("TR", new DateOnly(2026, 1, 3), 0),
             CancellationToken.None);
 
         result.Value.ResultDate.ShouldBe(new DateOnly(2026, 1, 3));

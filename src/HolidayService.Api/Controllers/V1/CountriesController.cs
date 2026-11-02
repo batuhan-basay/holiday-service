@@ -1,8 +1,9 @@
 using Asp.Versioning;
 using HolidayService.Api.RateLimiting;
-using HolidayService.Application.Contracts;
-using HolidayService.Application.Countries.Queries;
 using HolidayService.Application.Abstractions.Messaging;
+using HolidayService.Application.Contracts;
+using HolidayService.Application.Countries.Queries.GetCountries;
+using HolidayService.Application.Countries.Queries.GetCountryByCode;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -19,7 +20,7 @@ public sealed class CountriesController(IQueryDispatcher dispatcher) : ApiContro
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IReadOnlyList<CountryResponse>))]
     public Task<ActionResult<IReadOnlyList<CountryResponse>>> GetSupportedCountries(
         CancellationToken cancellationToken) =>
-        SendAsync(new GetCountries.Query(), cancellationToken);
+        SendAsync(new GetCountriesQuery(), cancellationToken);
 
     [HttpGet("{countryCode}", Name = nameof(GetCountry))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(CountryDetailResponse))]
@@ -27,5 +28,5 @@ public sealed class CountriesController(IQueryDispatcher dispatcher) : ApiContro
     public Task<ActionResult<CountryDetailResponse>> GetCountry(
         string countryCode,
         CancellationToken cancellationToken) =>
-        SendAsync(new GetCountryByCode.Query(countryCode), cancellationToken);
+        SendAsync(new GetCountryByCodeQuery(countryCode), cancellationToken);
 }
