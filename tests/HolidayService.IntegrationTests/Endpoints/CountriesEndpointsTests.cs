@@ -64,8 +64,6 @@ public sealed class CountriesEndpointsTests : IClassFixture<HolidayApiFactory>
     [Fact]
     public async Task GetCountry_NormalisesALowerCaseCodeBeforeCallingUpstream()
     {
-        // Only the canonical upper-case path is stubbed: a 200 proves the domain
-        // normalised "tr" to "TR" before the upstream call was made.
         _factory.Upstream.StubCountryInfo("TR", "Türkiye", "Republic of Türkiye", "Asia");
 
         HttpResponseMessage response = await _client.GetAsync("/api/v1/countries/tr");

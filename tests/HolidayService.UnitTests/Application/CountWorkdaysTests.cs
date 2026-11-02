@@ -23,7 +23,6 @@ public sealed class CountWorkdaysTests
     [Fact]
     public async Task Handle_SplitsTheRangeIntoWorkWeekendAndHolidayDays()
     {
-        // Mon 2026-01-05 .. Sun 2026-01-11, with Wednesday off.
         GivenYear(2026, HolidayFactory.On(2026, 1, 7, "Mid-week"));
 
         Result<WorkdayCountResponse> result = await CreateHandler().Handle(

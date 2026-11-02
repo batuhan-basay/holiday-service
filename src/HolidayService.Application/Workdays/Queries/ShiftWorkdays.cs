@@ -47,8 +47,6 @@ public static class ShiftWorkdays
                 return Result.Failure<WorkdayShiftResponse>(countryCode.Error);
             }
 
-            // Load a calendar window wide enough that the walk can never run past the
-            // holidays we know about: every business day costs at most ~3 calendar days.
             int span = (Math.Abs(request.Workdays) * 3) + 14;
 
             DateOnly windowStart = request.Workdays >= 0

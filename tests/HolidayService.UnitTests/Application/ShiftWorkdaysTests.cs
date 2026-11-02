@@ -28,7 +28,6 @@ public sealed class ShiftWorkdaysTests
             new ShiftWorkdays.Query("TR", new DateOnly(2026, 1, 2), 2),
             CancellationToken.None);
 
-        // Friday + 2 workdays: Monday is the first, Tuesday is a holiday, so Wednesday.
         result.IsSuccess.ShouldBeTrue();
         result.Value.ResultDate.ShouldBe(new DateOnly(2026, 1, 7));
         result.Value.ResultDayOfWeek.ShouldBe("Wednesday");
@@ -41,7 +40,6 @@ public sealed class ShiftWorkdaysTests
             new ShiftWorkdays.Query("TR", new DateOnly(2026, 1, 7), -2),
             CancellationToken.None);
 
-        // Wednesday - 2 workdays: Tuesday is a holiday, Monday is the first, Friday the second.
         result.Value.ResultDate.ShouldBe(new DateOnly(2026, 1, 2));
     }
 

@@ -12,7 +12,6 @@ using Swashbuckle.AspNetCore.SwaggerGen;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
-// --- Composition: each layer registers only its own services. -------------------------
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -25,7 +24,6 @@ builder.Services
         options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
     });
 
-// --- Versioning: the version lives in the URL so a v2 can ship beside v1. -------------
 builder.Services
     .AddApiVersioning(options =>
     {
@@ -41,7 +39,6 @@ builder.Services
         options.SubstituteApiVersionInUrl = true;
     });
 
-// --- Authentication: a single API-key scheme, configured per environment. -------------
 builder.Services.Configure<ApiKeyOptions>(
     builder.Configuration.GetSection(ApiKeyOptions.SectionName));
 
@@ -55,7 +52,6 @@ builder.Services.AddAuthorization();
 
 builder.Services.AddClientRateLimiting(builder.Configuration);
 
-// --- Errors: one problem-details contract for every failure mode. --------------------
 builder.Services.AddProblemDetails(options =>
     options.CustomizeProblemDetails = context =>
     {

@@ -84,7 +84,6 @@ public static class RateLimitingExtensions
 
             if (!string.IsNullOrWhiteSpace(value))
             {
-                // Never partition on the raw secret.
                 return $"key:{value.GetHashCode(StringComparison.Ordinal)}";
             }
         }

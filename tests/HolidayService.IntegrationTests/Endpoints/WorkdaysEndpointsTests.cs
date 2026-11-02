@@ -19,7 +19,6 @@ public sealed class WorkdaysEndpointsTests : IClassFixture<HolidayApiFactory>
     [Fact]
     public async Task Count_SplitsTheRangeIntoWorkWeekendAndHolidayDays()
     {
-        // Monday 2026-03-02 .. Sunday 2026-03-08 with Wednesday off.
         _factory.Upstream.StubHolidays("TR", 2026, new HolidayStub("2026-03-04", "Mid-week"));
 
         WorkdayCountResponse? body = await _client
@@ -54,7 +53,6 @@ public sealed class WorkdaysEndpointsTests : IClassFixture<HolidayApiFactory>
             .GetFromJsonAsync<WorkdayShiftResponse>(
                 "/api/v1/workdays/TR/shift?startDate=2026-03-02&workdays=-1");
 
-        // Monday minus one workday is the preceding Friday.
         body!.ResultDate.ShouldBe(new DateOnly(2026, 2, 27));
     }
 

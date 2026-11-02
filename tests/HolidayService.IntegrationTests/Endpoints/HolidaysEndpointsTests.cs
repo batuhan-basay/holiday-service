@@ -137,7 +137,6 @@ public sealed class HolidaysEndpointsTests : IClassFixture<HolidayApiFactory>
     [Fact]
     public async Task GetLongWeekends_DetectsAHolidayNextToTheWeekend()
     {
-        // 2026-01-02 is a Friday, so the stretch runs Friday to Sunday.
         _factory.Upstream.StubHolidays("TR", 2026, new HolidayStub("2026-01-02", "Bridge"));
 
         IReadOnlyList<LongWeekendResponse>? body = await _client

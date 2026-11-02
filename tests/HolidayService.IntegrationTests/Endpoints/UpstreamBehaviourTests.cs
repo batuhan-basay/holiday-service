@@ -77,7 +77,6 @@ public sealed class UpstreamBehaviourTests : IClassFixture<HolidayApiFactory>
                 NagerStubs.HolidaysPath("TR", 2026),
                 StringComparison.Ordinal));
 
-        // Two requests, each retried once by the resilience pipeline.
         upstreamCalls.ShouldBeGreaterThan(1);
     }
 
