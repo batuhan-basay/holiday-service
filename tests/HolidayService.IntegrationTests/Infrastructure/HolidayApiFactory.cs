@@ -13,9 +13,9 @@ namespace HolidayService.IntegrationTests.Infrastructure;
 
 public sealed class HolidayApiFactory : WebApplicationFactory<Program>
 {
-    public const string ApiKey = "integration-test-key";
+    private const string _apiKey = "integration-test-key";
 
-    public static readonly DateOnly Today = new(2026, 3, 2);
+    private static readonly DateOnly _today = new(2026, 3, 2);
 
     public HolidayApiFactory() => Upstream = WireMockServer.Start();
 
@@ -24,7 +24,7 @@ public sealed class HolidayApiFactory : WebApplicationFactory<Program>
     public HttpClient CreateAuthenticatedClient()
     {
         HttpClient client = CreateClient();
-        client.DefaultRequestHeaders.Add("X-API-Key", ApiKey);
+        client.DefaultRequestHeaders.Add("X-API-Key", _apiKey);
         client.DefaultRequestHeaders.Accept.Add(
             new MediaTypeWithQualityHeaderValue("application/json"));
 
@@ -57,7 +57,7 @@ public sealed class HolidayApiFactory : WebApplicationFactory<Program>
                 ["NagerDate:HistoricalCacheDuration"] = "00:10:00",
                 ["ApiKeys:Enabled"] = "true",
                 ["ApiKeys:Clients:0:Owner"] = "integration-tests",
-                ["ApiKeys:Clients:0:Key"] = ApiKey,
+                ["ApiKeys:Clients:0:Key"] = _apiKey,
                 ["RateLimiting:PermitLimit"] = "10000",
                 ["RateLimiting:WindowSeconds"] = "60"
             }));
@@ -65,7 +65,7 @@ public sealed class HolidayApiFactory : WebApplicationFactory<Program>
         builder.ConfigureTestServices(services =>
         {
             services.RemoveAll<IDateTimeProvider>();
-            services.AddSingleton<IDateTimeProvider>(new FrozenClock(Today));
+            services.AddSingleton<IDateTimeProvider>(new FrozenClock(_today));
         });
     }
 

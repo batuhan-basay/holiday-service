@@ -1,5 +1,6 @@
 using System.Globalization;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using WireMock.RequestBuilders;
 using WireMock.ResponseBuilders;
 using WireMock.Server;
@@ -15,10 +16,66 @@ internal sealed record HolidayStub(
     IReadOnlyList<string>? Types = null,
     string? CountryCode = null);
 
+internal sealed record HolidayPayload
+{
+    [JsonPropertyName("date")]
+    public required string Date { get; init; }
+
+    [JsonPropertyName("localName")]
+    public required string LocalName { get; init; }
+
+    [JsonPropertyName("name")]
+    public required string Name { get; init; }
+
+    [JsonPropertyName("countryCode")]
+    public required string CountryCode { get; init; }
+
+    [JsonPropertyName("fixed")]
+    public bool Fixed { get; init; } = true;
+
+    [JsonPropertyName("global")]
+    public bool Global { get; init; } = true;
+
+    [JsonPropertyName("counties")]
+    public IReadOnlyList<string>? Counties { get; init; }
+
+    [JsonPropertyName("launchYear")]
+    public int? LaunchYear { get; init; }
+
+    [JsonPropertyName("types")]
+    public IReadOnlyList<string> Types { get; init; } = ["Public"];
+}
+
+internal sealed record CountryPayload
+{
+    [JsonPropertyName("countryCode")]
+    public required string CountryCode { get; init; }
+
+    [JsonPropertyName("name")]
+    public required string Name { get; init; }
+}
+
+internal sealed record CountryInfoPayload
+{
+    [JsonPropertyName("commonName")]
+    public required string CommonName { get; init; }
+
+    [JsonPropertyName("officialName")]
+    public required string OfficialName { get; init; }
+
+    [JsonPropertyName("countryCode")]
+    public required string CountryCode { get; init; }
+
+    [JsonPropertyName("region")]
+    public string? Region { get; init; }
+
+    [JsonPropertyName("borders")]
+    public IReadOnlyList<CountryInfoPayload>? Borders { get; init; }
+}
+
 internal static class NagerStubs
 {
-    private static readonly JsonSerializerOptions SerializerOptions =
-        new(JsonSerializerDefaults.Web);
+    private static readonly JsonSerializerOptions SerializerOptions = new(JsonSerializerDefaults.Web);
 
     public static WireMockServer StubHolidays(
         this WireMockServer server,
@@ -27,14 +84,12 @@ internal static class NagerStubs
         params HolidayStub[] holidays)
     {
         ArgumentNullException.ThrowIfNull(server);
+        ArgumentNullException.ThrowIfNull(holidays);
 
-        string path = string.Create(
-            CultureInfo.InvariantCulture,
-            $"/api/v3/PublicHolidays/{year}/{countryCode}");
+        List<HolidayPayload> payload =
+            [.. holidays.Select(holiday => ToPayload(holiday, countryCode))];
 
-        object[] payload = [.. holidays.Select(holiday => ToPayload(holiday, countryCode))];
-
-        return server.StubJson(path, payload);
+        return server.StubJson(HolidaysPath(countryCode, year), payload);
     }
 
     public static WireMockServer StubCountries(
@@ -42,13 +97,14 @@ internal static class NagerStubs
         params (string Code, string Name)[] countries)
     {
         ArgumentNullException.ThrowIfNull(server);
+        ArgumentNullException.ThrowIfNull(countries);
 
-        object[] payload =
+        List<CountryPayload> payload =
         [
-            .. countries.Select(static country => new
+            .. countries.Select(static country => new CountryPayload
             {
-                countryCode = country.Code,
-                name = country.Name
+                CountryCode = country.Code,
+                Name = country.Name
             })
         ];
 
@@ -64,21 +120,23 @@ internal static class NagerStubs
         params (string Code, string Name)[] borders)
     {
         ArgumentNullException.ThrowIfNull(server);
+        ArgumentNullException.ThrowIfNull(borders);
 
-        var payload = new
+        var payload = new CountryInfoPayload
         {
-            commonName,
-            officialName,
-            countryCode,
-            region,
-            borders = borders.Select(static border => new
-            {
-                commonName = border.Name,
-                officialName = border.Name,
-                countryCode = border.Code,
-                region = (string?)null,
-                borders = (object?)null
-            })
+            CommonName = commonName,
+            OfficialName = officialName,
+            CountryCode = countryCode,
+            Region = region,
+            Borders =
+            [
+                .. borders.Select(static border => new CountryInfoPayload
+                {
+                    CommonName = border.Name,
+                    OfficialName = border.Name,
+                    CountryCode = border.Code
+                })
+            ]
         };
 
         return server.StubJson($"/api/v3/CountryInfo/{countryCode}", payload);
@@ -89,12 +147,10 @@ internal static class NagerStubs
         params HolidayStub[] holidays)
     {
         ArgumentNullException.ThrowIfNull(server);
+        ArgumentNullException.ThrowIfNull(holidays);
 
-        object[] payload =
-        [
-            .. holidays.Select(static holiday =>
-                ToPayload(holiday, holiday.CountryCode ?? "XX"))
-        ];
+        List<HolidayPayload> payload =
+            [.. holidays.Select(static holiday => ToPayload(holiday, holiday.CountryCode ?? "XX"))];
 
         return server.StubJson("/api/v3/NextPublicHolidaysWorldwide", payload);
     }
@@ -117,7 +173,10 @@ internal static class NagerStubs
         CultureInfo.InvariantCulture,
         $"/api/v3/PublicHolidays/{year}/{countryCode}");
 
-    private static WireMockServer StubJson(this WireMockServer server, string path, object payload)
+    private static WireMockServer StubJson<TPayload>(
+        this WireMockServer server,
+        string path,
+        TPayload payload)
     {
         server
             .Given(Request.Create().WithPath(path).UsingGet())
@@ -129,16 +188,15 @@ internal static class NagerStubs
         return server;
     }
 
-    private static object ToPayload(HolidayStub holiday, string countryCode) => new
-    {
-        date = holiday.Date,
-        localName = holiday.LocalName ?? holiday.Name,
-        name = holiday.Name,
-        countryCode = holiday.CountryCode ?? countryCode,
-        @fixed = true,
-        global = holiday.Global,
-        counties = holiday.Counties,
-        launchYear = (int?)null,
-        types = holiday.Types ?? ["Public"]
-    };
+    private static HolidayPayload ToPayload(HolidayStub holiday, string countryCode) =>
+        new()
+        {
+            Date = holiday.Date,
+            LocalName = holiday.LocalName ?? holiday.Name,
+            Name = holiday.Name,
+            CountryCode = holiday.CountryCode ?? countryCode,
+            Global = holiday.Global,
+            Counties = holiday.Counties,
+            Types = holiday.Types ?? ["Public"]
+        };
 }
