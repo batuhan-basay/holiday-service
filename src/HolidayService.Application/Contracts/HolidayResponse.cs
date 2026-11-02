@@ -6,11 +6,9 @@ public sealed record HolidayResponse(
     string LocalName,
     string CountryCode,
     string DayOfWeek,
-    bool IsFixed,
-    bool IsGlobal,
-    IReadOnlyList<string> Counties,
-    int? LaunchYear,
-    IReadOnlyList<string> Types);
+    IReadOnlyList<string> Types,
+    bool IsSubstitute,
+    bool IsEstimated);
 
 public sealed record HolidayCollectionResponse(
     string CountryCode,

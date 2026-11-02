@@ -1,28 +1,31 @@
 using FluentValidation;
 using FluentValidation.Results;
+using HolidayService.Application.Abstractions.Messaging;
 using HolidayService.Application.Exceptions;
-using MediatR;
+using HolidayService.Domain.Common;
 
 namespace HolidayService.Application.Behaviors;
 
-internal sealed class ValidationBehavior<TRequest, TResponse>(
-    IEnumerable<IValidator<TRequest>> validators)
-    : IPipelineBehavior<TRequest, TResponse>
-    where TRequest : notnull
+internal sealed class ValidationBehavior<TQuery, TResponse>(
+    IEnumerable<IValidator<TQuery>> validators)
+    : IQueryBehavior<TQuery, TResponse>
+    where TQuery : IQuery<TResponse>
 {
-    public async Task<TResponse> Handle(
-        TRequest request,
-        RequestHandlerDelegate<TResponse> next,
+    public async Task<Result<TResponse>> HandleAsync(
+        TQuery query,
+        QueryHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
-        IValidator<TRequest>[] applicable = [.. validators];
+        ArgumentNullException.ThrowIfNull(next);
+
+        IValidator<TQuery>[] applicable = [.. validators];
 
         if (applicable.Length == 0)
         {
             return await next().ConfigureAwait(false);
         }
 
-        var context = new ValidationContext<TRequest>(request);
+        var context = new ValidationContext<TQuery>(query);
 
         ValidationResult[] results = await Task.WhenAll(
             applicable.Select(validator => validator.ValidateAsync(context, cancellationToken)))

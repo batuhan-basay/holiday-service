@@ -1,0 +1,18 @@
+{
+  "countryCode": "ES",
+  "name": "Spain",
+  "officialName": "Kingdom of Spain",
+  "weekend": ["Saturday", "Sunday"],
+  "holidays": [
+    { "kind": "fixed",  "month": 1,  "day": 1,  "name": "New Year's Day",        "localName": "Año Nuevo" },
+    { "kind": "fixed",  "month": 1,  "day": 6,  "name": "Epiphany",              "localName": "Epifanía del Señor" },
+    { "kind": "easter", "offsetDays": -2, "name": "Good Friday",                 "localName": "Viernes Santo" },
+    { "kind": "fixed",  "month": 5,  "day": 1,  "name": "Labour Day",            "localName": "Fiesta del Trabajo" },
+    { "kind": "fixed",  "month": 8,  "day": 15, "name": "Assumption of Mary",    "localName": "Asunción de la Virgen" },
+    { "kind": "fixed",  "month": 10, "day": 12, "name": "National Day of Spain",  "localName": "Fiesta Nacional de España" },
+    { "kind": "fixed",  "month": 11, "day": 1,  "name": "All Saints' Day",       "localName": "Todos los Santos" },
+    { "kind": "fixed",  "month": 12, "day": 6,  "name": "Constitution Day",      "localName": "Día de la Constitución Española" },
+    { "kind": "fixed",  "month": 12, "day": 8,  "name": "Immaculate Conception", "localName": "Inmaculada Concepción" },
+    { "kind": "fixed",  "month": 12, "day": 25, "name": "Christmas Day",         "localName": "Natividad del Señor" }
+  ]
+}

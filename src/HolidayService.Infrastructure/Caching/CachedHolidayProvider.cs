@@ -1,10 +1,9 @@
 using HolidayService.Application.Abstractions.Caching;
 using HolidayService.Application.Abstractions.Providers;
-using HolidayService.Application.Abstractions.Time;
 using HolidayService.Domain.Common;
 using HolidayService.Domain.Countries;
 using HolidayService.Domain.Holidays;
-using HolidayService.Infrastructure.Nager;
+using HolidayService.Infrastructure.Calendars;
 using Microsoft.Extensions.Options;
 
 namespace HolidayService.Infrastructure.Caching;
@@ -12,10 +11,9 @@ namespace HolidayService.Infrastructure.Caching;
 internal sealed class CachedHolidayProvider(
     IHolidayProvider inner,
     ICacheService cache,
-    IDateTimeProvider clock,
-    IOptions<NagerDateOptions> options) : IHolidayProvider
+    IOptions<HolidayDataOptions> options) : IHolidayProvider
 {
-    private readonly NagerDateOptions _options = options.Value;
+    private readonly HolidayDataOptions _options = options.Value;
 
     public async Task<Result<IReadOnlyList<Holiday>>> GetHolidaysAsync(
         CountryCode countryCode,
@@ -40,71 +38,21 @@ internal sealed class CachedHolidayProvider(
         if (result.IsSuccess)
         {
             await cache
-                .SetAsync(key, result.Value, ExpirationFor(year), cancellationToken)
+                .SetAsync(key, result.Value, _options.CacheDuration, cancellationToken)
                 .ConfigureAwait(false);
         }
 
         return result;
     }
 
-    public async Task<Result<IReadOnlyList<CountrySummary>>> GetAvailableCountriesAsync(
-        CancellationToken cancellationToken = default)
-    {
-        IReadOnlyList<CountrySummary>? cached = await cache
-            .GetAsync<IReadOnlyList<CountrySummary>>(CacheKeys.AvailableCountries, cancellationToken)
-            .ConfigureAwait(false);
+    public Task<Result<IReadOnlyList<CountrySummary>>> GetAvailableCountriesAsync(
+        CancellationToken cancellationToken = default) =>
+        inner.GetAvailableCountriesAsync(cancellationToken);
 
-        if (cached is not null)
-        {
-            return Result.Success(cached);
-        }
-
-        Result<IReadOnlyList<CountrySummary>> result = await inner
-            .GetAvailableCountriesAsync(cancellationToken)
-            .ConfigureAwait(false);
-
-        if (result.IsSuccess)
-        {
-            await cache.SetAsync(
-                CacheKeys.AvailableCountries,
-                result.Value,
-                _options.HistoricalCacheDuration,
-                cancellationToken).ConfigureAwait(false);
-        }
-
-        return result;
-    }
-
-    public async Task<Result<Country>> GetCountryAsync(
+    public Task<Result<Country>> GetCountryAsync(
         CountryCode countryCode,
-        CancellationToken cancellationToken = default)
-    {
-        string key = CacheKeys.Country(countryCode);
-
-        Country? cached = await cache
-            .GetAsync<Country>(key, cancellationToken)
-            .ConfigureAwait(false);
-
-        if (cached is not null)
-        {
-            return Result.Success(cached);
-        }
-
-        Result<Country> result = await inner
-            .GetCountryAsync(countryCode, cancellationToken)
-            .ConfigureAwait(false);
-
-        if (result.IsSuccess)
-        {
-            await cache.SetAsync(
-                key,
-                result.Value,
-                _options.HistoricalCacheDuration,
-                cancellationToken).ConfigureAwait(false);
-        }
-
-        return result;
-    }
+        CancellationToken cancellationToken = default) =>
+        inner.GetCountryAsync(countryCode, cancellationToken);
 
     public async Task<Result<IReadOnlyList<Holiday>>> GetNextHolidaysWorldwideAsync(
         CancellationToken cancellationToken = default)
@@ -133,8 +81,4 @@ internal sealed class CachedHolidayProvider(
 
         return result;
     }
-
-    private TimeSpan ExpirationFor(int year) => year < clock.Today.Year
-        ? _options.HistoricalCacheDuration
-        : _options.CacheDuration;
 }

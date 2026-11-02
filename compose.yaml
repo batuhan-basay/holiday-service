@@ -8,8 +8,8 @@ services:
       - "8080:8080"
     environment:
       ASPNETCORE_ENVIRONMENT: Production
-      NagerDate__BaseAddress: https://date.nager.at/
-      NagerDate__CacheDuration: "12:00:00"
+      HolidayData__CacheDuration: "12:00:00"
+      HolidayData__HijriDayAdjustment: "0"
       RateLimiting__PermitLimit: "100"
       RateLimiting__WindowSeconds: "60"
       ApiKeys__Enabled: "true"

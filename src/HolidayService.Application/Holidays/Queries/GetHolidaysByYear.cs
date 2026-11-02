@@ -14,7 +14,6 @@ public static class GetHolidaysByYear
     public sealed record Query(
         string CountryCode,
         int Year,
-        string? County = null,
         HolidayType? Type = null) : IQuery<HolidayCollectionResponse>;
 
     internal sealed class Validator : AbstractValidator<Query>
@@ -23,9 +22,6 @@ public static class GetHolidaysByYear
         {
             RuleFor(query => query.CountryCode).MustBeCountryCode();
             RuleFor(query => query.Year).MustBeSupportedYear();
-            RuleFor(query => query.County)
-                .MaximumLength(10)
-                .When(query => query.County is not null);
         }
     }
 
@@ -53,7 +49,7 @@ public static class GetHolidaysByYear
             }
 
             IReadOnlyList<HolidayResponse> filtered = holidays.Value
-                .Apply(request.County, request.Type)
+                .Apply(request.Type)
                 .OrderBy(static holiday => holiday.Date)
                 .ToResponse();
 

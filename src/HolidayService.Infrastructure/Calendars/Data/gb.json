@@ -1,0 +1,16 @@
+{
+  "countryCode": "GB",
+  "name": "United Kingdom",
+  "officialName": "United Kingdom of Great Britain and Northern Ireland",
+  "weekend": ["Saturday", "Sunday"],
+  "holidays": [
+    { "kind": "fixed",      "month": 1,  "day": 1,  "substitution": "nextWorkday", "name": "New Year's Day", "localName": "New Year's Day" },
+    { "kind": "easter",     "offsetDays": -2, "name": "Good Friday",   "localName": "Good Friday" },
+    { "kind": "easter",     "offsetDays": 1,  "name": "Easter Monday", "localName": "Easter Monday" },
+    { "kind": "nthWeekday", "month": 5,  "dayOfWeek": "Monday", "occurrence": 1,  "name": "Early May bank holiday", "localName": "Early May bank holiday" },
+    { "kind": "nthWeekday", "month": 5,  "dayOfWeek": "Monday", "occurrence": -1, "name": "Spring bank holiday",    "localName": "Spring bank holiday" },
+    { "kind": "nthWeekday", "month": 8,  "dayOfWeek": "Monday", "occurrence": -1, "name": "Summer bank holiday",    "localName": "Summer bank holiday" },
+    { "kind": "fixed",      "month": 12, "day": 25, "substitution": "nextWorkday", "name": "Christmas Day", "localName": "Christmas Day" },
+    { "kind": "fixed",      "month": 12, "day": 26, "substitution": "nextWorkday", "name": "Boxing Day",    "localName": "Boxing Day" }
+  ]
+}

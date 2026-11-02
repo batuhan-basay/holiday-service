@@ -1,0 +1,17 @@
+{
+  "countryCode": "TR",
+  "name": "Türkiye",
+  "officialName": "Republic of Türkiye",
+  "weekend": ["Saturday", "Sunday"],
+  "holidays": [
+    { "kind": "fixed", "month": 1,  "day": 1,  "name": "New Year's Day",                                  "localName": "Yılbaşı" },
+    { "kind": "fixed", "month": 4,  "day": 23, "name": "National Sovereignty and Children's Day",          "localName": "Ulusal Egemenlik ve Çocuk Bayramı" },
+    { "kind": "fixed", "month": 5,  "day": 1,  "name": "Labour and Solidarity Day",                        "localName": "Emek ve Dayanışma Günü" },
+    { "kind": "fixed", "month": 5,  "day": 19, "name": "Commemoration of Atatürk, Youth and Sports Day",   "localName": "Atatürk'ü Anma, Gençlik ve Spor Bayramı" },
+    { "kind": "fixed", "month": 7,  "day": 15, "name": "Democracy and National Unity Day",                 "localName": "Demokrasi ve Millî Birlik Günü" },
+    { "kind": "fixed", "month": 8,  "day": 30, "name": "Victory Day",                                      "localName": "Zafer Bayramı" },
+    { "kind": "fixed", "month": 10, "day": 29, "name": "Republic Day",                                     "localName": "Cumhuriyet Bayramı" },
+    { "kind": "hijri", "hijriMonth": 10, "hijriDay": 1,  "length": 3, "name": "Ramadan Feast",  "localName": "Ramazan Bayramı" },
+    { "kind": "hijri", "hijriMonth": 12, "hijriDay": 10, "length": 4, "name": "Sacrifice Feast", "localName": "Kurban Bayramı" }
+  ]
+}

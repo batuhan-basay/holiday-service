@@ -3,7 +3,7 @@ using HolidayService.Api.RateLimiting;
 using HolidayService.Application.Contracts;
 using HolidayService.Application.Holidays.Queries;
 using HolidayService.Application.Workdays.Queries;
-using MediatR;
+using HolidayService.Application.Abstractions.Messaging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -14,7 +14,7 @@ namespace HolidayService.Api.Controllers.V1;
 [EnableRateLimiting(RateLimitOptions.PerClientPolicy)]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/workdays")]
-public sealed class WorkdaysController(ISender sender) : ApiControllerBase(sender)
+public sealed class WorkdaysController(IQueryDispatcher dispatcher) : ApiControllerBase(dispatcher)
 {
     [HttpGet("{countryCode}/count", Name = nameof(Count))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(WorkdayCountResponse))]

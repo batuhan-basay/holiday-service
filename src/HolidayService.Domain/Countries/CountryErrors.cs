@@ -14,5 +14,5 @@ public static class CountryErrors
 
     public static Error NotSupported(string code) => Error.NotFound(
         "Country.NotSupported",
-        $"Country '{code}' is not supported by the upstream holiday provider.");
+        $"Country '{code}' is not covered by this service.");
 }

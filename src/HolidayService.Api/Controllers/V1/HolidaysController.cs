@@ -3,7 +3,7 @@ using HolidayService.Api.RateLimiting;
 using HolidayService.Application.Contracts;
 using HolidayService.Application.Holidays.Queries;
 using HolidayService.Domain.Holidays;
-using MediatR;
+using HolidayService.Application.Abstractions.Messaging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -14,7 +14,7 @@ namespace HolidayService.Api.Controllers.V1;
 [EnableRateLimiting(RateLimitOptions.PerClientPolicy)]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/holidays")]
-public sealed class HolidaysController(ISender sender) : ApiControllerBase(sender)
+public sealed class HolidaysController(IQueryDispatcher dispatcher) : ApiControllerBase(dispatcher)
 {
     [HttpGet("{countryCode}/{year:int}", Name = nameof(GetByYear))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(HolidayCollectionResponse))]
@@ -23,9 +23,8 @@ public sealed class HolidaysController(ISender sender) : ApiControllerBase(sende
         string countryCode,
         int year,
         CancellationToken cancellationToken,
-        [FromQuery] string? county = null,
         [FromQuery] HolidayType? type = null) =>
-        SendAsync(new GetHolidaysByYear.Query(countryCode, year, county, type), cancellationToken);
+        SendAsync(new GetHolidaysByYear.Query(countryCode, year, type), cancellationToken);
 
     [HttpGet("{countryCode}/{year:int}/{month:int}", Name = nameof(GetByMonth))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(HolidayCollectionResponse))]

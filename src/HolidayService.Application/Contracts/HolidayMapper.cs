@@ -16,11 +16,9 @@ public static class HolidayMapper
             holiday.LocalName,
             holiday.CountryCode.Value,
             holiday.DayOfWeek.ToString(),
-            holiday.IsFixed,
-            holiday.IsGlobal,
-            holiday.Counties,
-            holiday.LaunchYear,
-            [.. holiday.Types.Select(static type => type.ToString())]);
+            [.. holiday.Types.Select(static type => type.ToString())],
+            holiday.IsSubstitute,
+            holiday.IsEstimated);
     }
 
     public static IReadOnlyList<HolidayResponse> ToResponse(this IEnumerable<Holiday> holidays)
@@ -43,10 +41,9 @@ public static class HolidayMapper
 
         return new CountryDetailResponse(
             country.Code.Value,
-            country.CommonName,
+            country.Name,
             country.OfficialName,
-            country.Region,
-            [.. country.Borders.Select(ToResponse)]);
+            [.. country.WeekendDays.Select(static day => day.ToString())]);
     }
 
     public static LongWeekendResponse ToResponse(this LongWeekend longWeekend)

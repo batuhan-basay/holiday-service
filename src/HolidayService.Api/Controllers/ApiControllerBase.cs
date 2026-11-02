@@ -1,6 +1,6 @@
 using HolidayService.Api.ErrorHandling;
+using HolidayService.Application.Abstractions.Messaging;
 using HolidayService.Domain.Common;
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
 
 namespace HolidayService.Api.Controllers;
@@ -10,16 +10,17 @@ namespace HolidayService.Api.Controllers;
 [ProducesResponseType(StatusCodes.Status400BadRequest, Type = typeof(ValidationProblemDetails))]
 [ProducesResponseType(StatusCodes.Status401Unauthorized, Type = typeof(ProblemDetails))]
 [ProducesResponseType(StatusCodes.Status429TooManyRequests, Type = typeof(ProblemDetails))]
-[ProducesResponseType(StatusCodes.Status503ServiceUnavailable, Type = typeof(ProblemDetails))]
-public abstract class ApiControllerBase(ISender sender) : ControllerBase
+public abstract class ApiControllerBase(IQueryDispatcher dispatcher) : ControllerBase
 {
-    protected ISender Sender { get; } = sender;
+    protected IQueryDispatcher Dispatcher { get; } = dispatcher;
 
     protected async Task<ActionResult<TResponse>> SendAsync<TResponse>(
-        IRequest<Result<TResponse>> query,
+        IQuery<TResponse> query,
         CancellationToken cancellationToken)
     {
-        Result<TResponse> result = await Sender.Send(query, cancellationToken).ConfigureAwait(false);
+        Result<TResponse> result = await Dispatcher
+            .SendAsync(query, cancellationToken)
+            .ConfigureAwait(false);
 
         return result.ToActionResult(this);
     }

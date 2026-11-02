@@ -1,56 +1,54 @@
 using System.Diagnostics;
+using HolidayService.Application.Abstractions.Messaging;
 using HolidayService.Domain.Common;
-using MediatR;
 using Microsoft.Extensions.Logging;
 
 namespace HolidayService.Application.Behaviors;
 
-internal sealed class LoggingBehavior<TRequest, TResponse>(
-    ILogger<LoggingBehavior<TRequest, TResponse>> logger)
-    : IPipelineBehavior<TRequest, TResponse>
-    where TRequest : notnull
-    where TResponse : Result
+internal sealed class LoggingBehavior<TQuery, TResponse>(
+    ILogger<LoggingBehavior<TQuery, TResponse>> logger)
+    : IQueryBehavior<TQuery, TResponse>
+    where TQuery : IQuery<TResponse>
 {
     private const int SlowRequestThresholdMs = 500;
 
-    public async Task<TResponse> Handle(
-        TRequest request,
-        RequestHandlerDelegate<TResponse> next,
+    public async Task<Result<TResponse>> HandleAsync(
+        TQuery query,
+        QueryHandlerDelegate<TResponse> next,
         CancellationToken cancellationToken)
     {
-        string requestName = typeof(TRequest).Name;
+        ArgumentNullException.ThrowIfNull(next);
+
+        string queryName = typeof(TQuery).Name;
         long startedAt = Stopwatch.GetTimestamp();
 
-        TResponse response = await next().ConfigureAwait(false);
+        Result<TResponse> response = await next().ConfigureAwait(false);
 
         TimeSpan elapsed = Stopwatch.GetElapsedTime(startedAt);
 
-        if (response.IsSuccess)
-        {
-            if (elapsed.TotalMilliseconds >= SlowRequestThresholdMs)
-            {
-                logger.LogWarning(
-                    "{RequestName} completed in {ElapsedMs}ms, above the {ThresholdMs}ms threshold",
-                    requestName,
-                    (long)elapsed.TotalMilliseconds,
-                    SlowRequestThresholdMs);
-            }
-            else
-            {
-                logger.LogInformation(
-                    "{RequestName} completed in {ElapsedMs}ms",
-                    requestName,
-                    (long)elapsed.TotalMilliseconds);
-            }
-        }
-        else
+        if (response.IsFailure)
         {
             logger.LogWarning(
-                "{RequestName} failed in {ElapsedMs}ms with {ErrorCode}: {ErrorDescription}",
-                requestName,
+                "{QueryName} failed in {ElapsedMs}ms with {ErrorCode}: {ErrorDescription}",
+                queryName,
                 (long)elapsed.TotalMilliseconds,
                 response.Error.Code,
                 response.Error.Description);
+        }
+        else if (elapsed.TotalMilliseconds >= SlowRequestThresholdMs)
+        {
+            logger.LogWarning(
+                "{QueryName} completed in {ElapsedMs}ms, above the {ThresholdMs}ms threshold",
+                queryName,
+                (long)elapsed.TotalMilliseconds,
+                SlowRequestThresholdMs);
+        }
+        else
+        {
+            logger.LogInformation(
+                "{QueryName} completed in {ElapsedMs}ms",
+                queryName,
+                (long)elapsed.TotalMilliseconds);
         }
 
         return response;

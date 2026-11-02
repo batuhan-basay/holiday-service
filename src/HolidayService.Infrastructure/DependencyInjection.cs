@@ -2,7 +2,7 @@ using HolidayService.Application.Abstractions.Caching;
 using HolidayService.Application.Abstractions.Providers;
 using HolidayService.Application.Abstractions.Time;
 using HolidayService.Infrastructure.Caching;
-using HolidayService.Infrastructure.Nager;
+using HolidayService.Infrastructure.Calendars;
 using HolidayService.Infrastructure.Time;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -20,42 +20,22 @@ public static class DependencyInjection
         ArgumentNullException.ThrowIfNull(configuration);
 
         services
-            .AddOptions<NagerDateOptions>()
-            .Bind(configuration.GetSection(NagerDateOptions.SectionName))
+            .AddOptions<HolidayDataOptions>()
+            .Bind(configuration.GetSection(HolidayDataOptions.SectionName))
             .ValidateDataAnnotations()
             .ValidateOnStart();
-
-        NagerDateOptions settings = configuration
-            .GetSection(NagerDateOptions.SectionName)
-            .Get<NagerDateOptions>() ?? new NagerDateOptions();
 
         services.AddMemoryCache();
         services.AddSingleton<ICacheService, MemoryCacheService>();
         services.AddSingleton<IDateTimeProvider, SystemDateTimeProvider>();
 
-        services
-            .AddHttpClient<NagerHolidayProvider>(client =>
-            {
-                client.BaseAddress = settings.BaseAddress;
-                client.Timeout = Timeout.InfiniteTimeSpan;
-                client.DefaultRequestHeaders.Add("Accept", "application/json");
-            })
-            .AddStandardResilienceHandler(resilience =>
-            {
-                resilience.Retry.MaxRetryAttempts = settings.RetryCount;
-                resilience.Retry.UseJitter = true;
-                resilience.AttemptTimeout.Timeout = settings.Timeout;
-                resilience.TotalRequestTimeout.Timeout =
-                    TimeSpan.FromTicks(settings.Timeout.Ticks * 3);
-                resilience.CircuitBreaker.SamplingDuration =
-                    TimeSpan.FromTicks(settings.Timeout.Ticks * 4);
-            });
+        services.AddSingleton<EmbeddedCalendarCatalog>();
+        services.AddSingleton<CalendarHolidayProvider>();
 
-        services.AddTransient<IHolidayProvider>(provider => new CachedHolidayProvider(
-            provider.GetRequiredService<NagerHolidayProvider>(),
+        services.AddSingleton<IHolidayProvider>(provider => new CachedHolidayProvider(
+            provider.GetRequiredService<CalendarHolidayProvider>(),
             provider.GetRequiredService<ICacheService>(),
-            provider.GetRequiredService<IDateTimeProvider>(),
-            provider.GetRequiredService<IOptions<NagerDateOptions>>()));
+            provider.GetRequiredService<IOptions<HolidayDataOptions>>()));
 
         return services;
     }

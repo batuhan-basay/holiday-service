@@ -2,7 +2,7 @@ using Asp.Versioning;
 using HolidayService.Api.RateLimiting;
 using HolidayService.Application.Contracts;
 using HolidayService.Application.Countries.Queries;
-using MediatR;
+using HolidayService.Application.Abstractions.Messaging;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
@@ -13,7 +13,7 @@ namespace HolidayService.Api.Controllers.V1;
 [EnableRateLimiting(RateLimitOptions.PerClientPolicy)]
 [ApiVersion("1.0")]
 [Route("api/v{version:apiVersion}/countries")]
-public sealed class CountriesController(ISender sender) : ApiControllerBase(sender)
+public sealed class CountriesController(IQueryDispatcher dispatcher) : ApiControllerBase(dispatcher)
 {
     [HttpGet(Name = nameof(GetSupportedCountries))]
     [ProducesResponseType(StatusCodes.Status200OK, Type = typeof(IReadOnlyList<CountryResponse>))]

@@ -8,9 +8,5 @@ internal static class CacheKeys
     public static string Holidays(CountryCode countryCode, int year) =>
         string.Create(CultureInfo.InvariantCulture, $"holidays:{countryCode.Value}:{year}");
 
-    public const string AvailableCountries = "countries:available";
-
-    public static string Country(CountryCode countryCode) => $"country:{countryCode.Value}";
-
     public const string WorldwideUpcoming = "holidays:worldwide:upcoming";
 }

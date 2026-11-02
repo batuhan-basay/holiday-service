@@ -1,0 +1,17 @@
+{
+  "countryCode": "DE",
+  "name": "Germany",
+  "officialName": "Federal Republic of Germany",
+  "weekend": ["Saturday", "Sunday"],
+  "holidays": [
+    { "kind": "fixed",  "month": 1,  "day": 1,  "name": "New Year's Day",     "localName": "Neujahr" },
+    { "kind": "easter", "offsetDays": -2, "name": "Good Friday",              "localName": "Karfreitag" },
+    { "kind": "easter", "offsetDays": 1,  "name": "Easter Monday",            "localName": "Ostermontag" },
+    { "kind": "fixed",  "month": 5,  "day": 1,  "name": "Labour Day",         "localName": "Tag der Arbeit" },
+    { "kind": "easter", "offsetDays": 39, "name": "Ascension Day",            "localName": "Christi Himmelfahrt" },
+    { "kind": "easter", "offsetDays": 50, "name": "Whit Monday",              "localName": "Pfingstmontag" },
+    { "kind": "fixed",  "month": 10, "day": 3,  "name": "German Unity Day",   "localName": "Tag der Deutschen Einheit" },
+    { "kind": "fixed",  "month": 12, "day": 25, "name": "Christmas Day",      "localName": "Erster Weihnachtstag" },
+    { "kind": "fixed",  "month": 12, "day": 26, "name": "St. Stephen's Day",  "localName": "Zweiter Weihnachtstag" }
+  ]
+}

@@ -15,18 +15,17 @@ internal static class HolidayFactory
         int day,
         string name = "Test Holiday",
         CountryCode? countryCode = null,
-        bool global = true,
-        IReadOnlyList<string>? counties = null,
-        HolidayType type = HolidayType.Public) =>
+        HolidayType type = HolidayType.Public,
+        bool isSubstitute = false,
+        bool isEstimated = false) =>
         new()
         {
             Date = new DateOnly(year, month, day),
             Name = name,
             LocalName = name,
             CountryCode = countryCode ?? Turkey,
-            IsFixed = true,
-            IsGlobal = global,
-            Counties = counties ?? [],
-            Types = [type]
+            Types = [type],
+            IsSubstitute = isSubstitute,
+            IsEstimated = isEstimated
         };
 }

@@ -12,20 +12,13 @@ public sealed record Holiday
 
     public required CountryCode CountryCode { get; init; }
 
-    public bool IsFixed { get; init; }
-
-    public bool IsGlobal { get; init; } = true;
-
-    public IReadOnlyList<string> Counties { get; init; } = [];
-
-    public int? LaunchYear { get; init; }
-
     public IReadOnlyList<HolidayType> Types { get; init; } = [];
+
+    public bool IsSubstitute { get; init; }
+
+    public bool IsEstimated { get; init; }
 
     public DayOfWeek DayOfWeek => Date.DayOfWeek;
 
     public bool IsPublic => Types.Contains(HolidayType.Public);
-
-    public bool AppliesTo(string? county) =>
-        IsGlobal || county is null || Counties.Contains(county, StringComparer.OrdinalIgnoreCase);
 }
